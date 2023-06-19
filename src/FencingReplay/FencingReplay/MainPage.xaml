@@ -8,7 +8,20 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <ListBox x:Name="listBox" Width="600" Height="400"/>
+    <Grid x:Name="LayoutGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <!--<ColumnDefinition Width="*" />-->
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ListBox x:Name="ListBox1" Width="600" Height="100" Grid.Column="0" Grid.Row="0" SelectionMode="Single"
+                  SelectionChanged="ListBox1_OnSelectionChanged"/>
+        <CaptureElement x:Name="Capture1" Grid.Column="0" Grid.Row="1"/>
+        <!--<ListBox x:Name="ListBox2" Width="600" Height="100" Grid.Column="1" Grid.Row="0" SelectionMode="Single" 
+                  SelectionChanged="ListBox2_OnSelectionChanged"/>
+        <CaptureElement x:Name="Capture2" Grid.Column="1" Grid.Row="1"/>-->
     </Grid>
 </Page>
