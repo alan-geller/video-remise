@@ -12,6 +12,7 @@ using Windows.Media.Capture.Frames;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System.Display;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -81,11 +82,36 @@ namespace FencingReplay
 
             async void ClearSource()
             {
+                if (currentCapture != null)
+                {
+                    if (isPreviewing)
+                    {
+                        await currentCapture.StopPreviewAsync();
+                    }
 
+                    await captureElement.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        captureElement.Source = null;
+                        if (currentRequest != null)
+                        {
+                            currentRequest.RequestRelease();
+                        }
+
+                        currentCapture.Dispose();
+                        currentCapture = null;
+                    });
+
+                    isPreviewing = false;
+                }
             }
 
             async void SetSource(MediaFrameSourceGroup sourceGroup)
             {
+                if (isPreviewing)
+                {
+                    ClearSource();
+                }
+
                 try
                 {
                     currentCapture = new MediaCapture();
