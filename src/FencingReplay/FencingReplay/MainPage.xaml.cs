@@ -43,12 +43,19 @@ namespace FencingReplay
             internal VideoChannel(MainPage page, int column)
             {
                 mainPage = page;
+
                 gridColumn = column;
+                while (mainPage.LayoutGrid.ColumnDefinitions.Count <= gridColumn)
+                {
+                    mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                }
+
                 sourceSelector = new ListBox();
                 PopulateSourceList(sourceSelector);
                 mainPage.LayoutGrid.Children.Add(sourceSelector);
                 Grid.SetColumn(sourceSelector, gridColumn);
                 Grid.SetRow(sourceSelector, 0);
+
                 captureElement = new CaptureElement();
                 mainPage.LayoutGrid.Children.Add(captureElement);
                 Grid.SetColumn(captureElement, gridColumn);
@@ -131,11 +138,11 @@ namespace FencingReplay
             base.OnNavigatedTo(e);
         }
 
-        private void ListBox1_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var selection = ListBox1.SelectedItem?.ToString();
-            SetVideoSource(Capture1, selection);
-        }
+        //private void ListBox1_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    var selection = ListBox1.SelectedItem?.ToString();
+        //    SetVideoSource(Capture1, selection);
+        //}
 
         private void ListBox2_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

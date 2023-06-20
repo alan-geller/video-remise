@@ -17,9 +17,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ListBox x:Name="ListBox1" Width="600" Height="100" Grid.Column="0" Grid.Row="0" SelectionMode="Single"
+        <!--<ListBox x:Name="ListBox1" Width="600" Height="100" Grid.Column="0" Grid.Row="0" SelectionMode="Single"
                   SelectionChanged="ListBox1_OnSelectionChanged"/>
-        <CaptureElement x:Name="Capture1" Grid.Column="0" Grid.Row="1"/>
+        <CaptureElement x:Name="Capture1" Grid.Column="0" Grid.Row="1"/>-->
         <!--<ListBox x:Name="ListBox2" Width="600" Height="100" Grid.Column="1" Grid.Row="0" SelectionMode="Single" 
                   SelectionChanged="ListBox2_OnSelectionChanged"/>
         <CaptureElement x:Name="Capture2" Grid.Column="1" Grid.Row="1"/>-->
