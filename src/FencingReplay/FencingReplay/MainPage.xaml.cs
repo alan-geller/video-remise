@@ -112,10 +112,13 @@ namespace FencingReplay
                     ClearSource();
                 }
 
+                currentSource = sourceGroup;
+
                 try
                 {
                     currentCapture = new MediaCapture();
-                    await currentCapture.InitializeAsync();
+                    var settings = new MediaCaptureInitializationSettings { VideoDeviceId = GetVideoDeviceId(currentSource) };
+                    await currentCapture.InitializeAsync(settings);
 
                     currentRequest.RequestActive();
                     DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
@@ -150,6 +153,18 @@ namespace FencingReplay
                     }
                 }
                 return null;
+            }
+
+            static string GetVideoDeviceId(MediaFrameSourceGroup sourceGroup)
+            {
+                foreach (var sourceInfo in sourceGroup.SourceInfos)
+                {
+                    if (sourceInfo.MediaStreamType == MediaStreamType.VideoRecord)
+                    {
+                        return sourceInfo.DeviceInformation.Id;
+                    }
+                }
+                return "";
             }
 
             static async void PopulateSourceList(ListBox listBox)
