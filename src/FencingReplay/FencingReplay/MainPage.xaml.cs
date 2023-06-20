@@ -6,11 +6,13 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Display;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System.Display;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -37,6 +39,7 @@ namespace FencingReplay
             MediaFrameSourceGroup currentSource;
             MediaCapture currentCapture;
             DisplayRequest currentRequest;
+            bool isPreviewing = false;
 
             static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
 
@@ -60,11 +63,54 @@ namespace FencingReplay
                 mainPage.LayoutGrid.Children.Add(captureElement);
                 Grid.SetColumn(captureElement, gridColumn);
                 Grid.SetRow(captureElement, 1);
+
+                Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
+                sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
+
+                currentRequest = new DisplayRequest();
             }
 
-            async void SetSource(string displayName)
+            private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
             {
-                var sourceGroup = FindMediaSource(displayName);
+                var source = FindMediaSource(channel.sourceSelector.SelectedItem.ToString());
+                if (source != null)
+                {
+                    channel.SetSource(source);
+                }
+            }
+
+            async void ClearSource()
+            {
+
+            }
+
+            async void SetSource(MediaFrameSourceGroup sourceGroup)
+            {
+                try
+                {
+                    currentCapture = new MediaCapture();
+                    await currentCapture.InitializeAsync();
+
+                    currentRequest.RequestActive();
+                    DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // This will be thrown if the user denied access to the camera in privacy settings
+                    await (new MessageDialog("The app was denied access to the camera")).ShowAsync();
+                    return;
+                }
+
+                try
+                {
+                    captureElement.Source = currentCapture;
+                    await currentCapture.StartPreviewAsync();
+                    isPreviewing = true;
+                }
+                catch (System.IO.FileLoadException)
+                {
+                    //currentCapture.CaptureDeviceExclusiveControlStatusChanged += _mediaCapture_CaptureDeviceExclusiveControlStatusChanged;
+                }
             }
 
             static MediaFrameSourceGroup FindMediaSource(string displayName)
