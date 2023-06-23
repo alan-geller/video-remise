@@ -8,20 +8,21 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid x:Name="LayoutGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <!--<ColumnDefinition Width="*" />-->
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <!--<ListBox x:Name="ListBox1" Width="600" Height="100" Grid.Column="0" Grid.Row="0" SelectionMode="Single"
-                  SelectionChanged="ListBox1_OnSelectionChanged"/>
-        <CaptureElement x:Name="Capture1" Grid.Column="0" Grid.Row="1"/>-->
-        <!--<ListBox x:Name="ListBox2" Width="600" Height="100" Grid.Column="1" Grid.Row="0" SelectionMode="Single" 
-                  SelectionChanged="ListBox2_OnSelectionChanged"/>
-        <CaptureElement x:Name="Capture2" Grid.Column="1" Grid.Row="1"/>-->
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="StartBtn" Content="Start" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStartRecording"/>
+            <Button x:Name="StopBtn" Content="Stop" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStopRecording"/>
+            <Button x:Name="PauseBtn" Content="Pause" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
+                    Click="OnTogglePauseRecording" IsEnabled="False"/>
+        </StackPanel>
+        <Grid x:Name="LayoutGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+        </Grid>
+    </StackPanel>
 </Page>

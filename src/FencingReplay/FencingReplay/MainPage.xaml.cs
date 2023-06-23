@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
@@ -40,6 +41,7 @@ namespace FencingReplay
             MediaFrameSourceGroup currentSource;
             MediaCapture currentCapture;
             DisplayRequest currentRequest;
+
             bool isPreviewing = false;
 
             static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
@@ -69,6 +71,27 @@ namespace FencingReplay
                 sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
 
                 currentRequest = new DisplayRequest();
+            }
+
+            internal async Task Pause()
+            {
+            }
+
+            internal async Task Resume()
+            {
+
+            }
+
+            internal async void StartRecording(string fileBaseName)
+            {
+                var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
+                StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
+
+            }
+
+            internal async void StopRecording()
+            {
+
             }
 
             private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
@@ -135,6 +158,7 @@ namespace FencingReplay
                     captureElement.Source = currentCapture;
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
+                    mainPage.Paused = true;
                 }
                 catch (System.IO.FileLoadException)
                 {
@@ -207,9 +231,10 @@ namespace FencingReplay
             }
         }
 
-        bool playing = false;
         List<VideoChannel> channels;
-        
+
+        public bool Paused { get; set; }
+        public bool Recording { get; set; }
 
         public MainPage()
         {
@@ -218,21 +243,14 @@ namespace FencingReplay
             channels = new List<VideoChannel>();
             channels.Add(new VideoChannel(this, 0));
             channels.Add(new VideoChannel(this, 1));
+
+            Paused = false;
+            Recording = false;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-        }
-
-        //private void ListBox1_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    var selection = ListBox1.SelectedItem?.ToString();
-        //    SetVideoSource(Capture1, selection);
-        //}
-
-        private void ListBox2_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
         }
 
         private MediaFrameSourceGroup FindMediaSource(string displayName)
@@ -253,5 +271,47 @@ namespace FencingReplay
         {
 
         }
+
+        private void OnStartRecording(object sender, RoutedEventArgs e)
+        {
+            PauseBtn.IsEnabled = true;
+            Recording = true;
+        }
+
+        private void OnStopRecording(object sender, RoutedEventArgs e)
+        {
+            PauseBtn.IsEnabled = false;
+            Recording = false;
+        }
+
+        private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
+        {
+            if (Recording)
+            {
+                if (!Paused)
+                {
+                    List<Task> done = new List<Task>();
+                    foreach (var channel in channels)
+                    {
+                        done.Add(channel.Pause());
+                    }
+                    Task.WaitAll(done.ToArray());
+                    PauseBtn.Content = "Resume";
+                    Paused = true;
+                }
+                else
+                {
+                    List<Task> done = new List<Task>();
+                    foreach (var channel in channels)
+                    {
+                        done.Add(channel.Resume());
+                    }
+                    Task.WaitAll(done.ToArray());
+                    PauseBtn.Content = "Pause";
+                    Paused = false;
+                }
+            }
+        }
     }
 }
+
