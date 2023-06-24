@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using YamlDotNet.Serialization;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -48,15 +49,17 @@ namespace FencingReplay
 
             static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
 
-            internal VideoChannel(MainPage page, int column)
+            internal VideoChannel(MainPage page)
             {
                 mainPage = page;
 
-                gridColumn = column;
-                while (mainPage.LayoutGrid.ColumnDefinitions.Count <= gridColumn)
+                gridColumn = mainPage.LayoutGrid.ColumnDefinitions.Count;
+                var columnWidth = 300;
+                foreach (var cd in mainPage.LayoutGrid.ColumnDefinitions)
                 {
-                    mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                    cd.MaxWidth = columnWidth;
                 }
+                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = columnWidth });
 
                 sourceSelector = new ListBox();
                 PopulateSourceList(sourceSelector);
@@ -105,6 +108,10 @@ namespace FencingReplay
                 {
                     channel.SetSource(source);
                 }
+                else
+                {
+                    channel.ClearSource();
+                }
             }
 
             async void ClearSource()
@@ -116,12 +123,13 @@ namespace FencingReplay
                         await currentCapture.StopPreviewAsync();
                     }
 
-                    await captureElement.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                         captureElement.Source = null;
                         if (currentRequest != null)
                         {
                             currentRequest.RequestRelease();
+                            currentRequest = new DisplayRequest();
                         }
 
                         currentCapture.Dispose();
@@ -134,10 +142,7 @@ namespace FencingReplay
 
             async void SetSource(MediaFrameSourceGroup sourceGroup)
             {
-                if (isPreviewing)
-                {
-                    ClearSource();
-                }
+                ClearSource();
 
                 currentSource = sourceGroup;
 
@@ -145,24 +150,23 @@ namespace FencingReplay
                 {
                     currentCapture = new MediaCapture();
                     var settings = new MediaCaptureInitializationSettings { VideoDeviceId = GetVideoDeviceId(currentSource) };
-                    await currentCapture.InitializeAsync(settings);
+                    await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    {
+                        await currentCapture.InitializeAsync(settings);
+                        currentRequest.RequestActive();
+                        DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
+                        captureElement.Source = currentCapture;
+                        await currentCapture.StartPreviewAsync();
+                        isPreviewing = true;
+                        mainPage.Paused = true;
+                    });
 
-                    currentRequest.RequestActive();
-                    DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
                 }
                 catch (UnauthorizedAccessException)
                 {
                     // This will be thrown if the user denied access to the camera in privacy settings
                     await (new MessageDialog("The app was denied access to the camera")).ShowAsync();
                     return;
-                }
-
-                try
-                {
-                    captureElement.Source = currentCapture;
-                    await currentCapture.StartPreviewAsync();
-                    isPreviewing = true;
-                    mainPage.Paused = true;
                 }
                 catch (System.IO.FileLoadException)
                 {
@@ -200,38 +204,14 @@ namespace FencingReplay
                 if (CurrentSources == null)
                 {
                     CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
-
-                    //FileSavePicker savePicker = new FileSavePicker();
-                    //savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                    //savePicker.FileTypeChoices.Add("Plain Text", new List<string>() { ".txt" });
-                    //savePicker.SuggestedFileName = "sources";
-
-                    //StorageFile file = await savePicker.PickSaveFileAsync();
-                    //if (file != null)
-                    //{
-                    //    using (var buffer = new StringWriter())
-                    //    {
-                    //        foreach (var frameSource in frameSources)
-                    //        {
-                    //            buffer.WriteLine($"Source group {frameSource.DisplayName}:");
-                    //            buffer.WriteLine($"  ID: {frameSource.Id}");
-                    //            foreach (var src in frameSource.SourceInfos)
-                    //            {
-                    //                buffer.WriteLine($"    Source ID: {src.Id}");
-                    //                buffer.WriteLine($"      Source Kind: {src.SourceKind}");
-                    //                buffer.WriteLine($"      Stream type: {src.MediaStreamType}");
-                    //            }
-                    //        }
-                    //        await FileIO.WriteTextAsync(file, buffer.ToString());
-                    //    }
-                    //}    
                 }
 
                 listBox.Items.Clear();
                 foreach (var frameSource in CurrentSources)
                 {
                     listBox.Items.Add(frameSource.DisplayName);
-                } 
+                }
+                listBox.Items.Add("--none--");
             }
         }
 
@@ -245,8 +225,8 @@ namespace FencingReplay
             this.InitializeComponent();
 
             channels = new List<VideoChannel>();
-            channels.Add(new VideoChannel(this, 0));
-            channels.Add(new VideoChannel(this, 1));
+            channels.Add(new VideoChannel(this));
+            channels.Add(new VideoChannel(this));
 
             Paused = false;
             Recording = false;
