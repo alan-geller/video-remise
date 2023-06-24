@@ -10,6 +10,7 @@ using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
+using Windows.Media.MediaProperties;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System.Display;
@@ -41,6 +42,7 @@ namespace FencingReplay
             MediaFrameSourceGroup currentSource;
             MediaCapture currentCapture;
             DisplayRequest currentRequest;
+            LowLagMediaRecording mediaRecording;
 
             bool isPreviewing = false;
 
@@ -82,16 +84,18 @@ namespace FencingReplay
 
             }
 
-            internal async void StartRecording(string fileBaseName)
+            internal async Task<IAsyncAction> StartRecording(string fileBaseName)
             {
                 var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
-                StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
-
+                StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
+                mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
+                return mediaRecording.StartAsync();
             }
 
-            internal async void StopRecording()
+            internal async Task<IAsyncAction> StopRecording()
             {
-
+                await mediaRecording.StopAsync();
+                return mediaRecording.FinishAsync();
             }
 
             private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
@@ -272,14 +276,30 @@ namespace FencingReplay
 
         }
 
-        private void OnStartRecording(object sender, RoutedEventArgs e)
+        private async void OnStartRecording(object sender, RoutedEventArgs e)
         {
+            //List<Task> done = new List<Task>();
+            foreach (var channel in channels)
+            {
+                //done.Add(channel.StartRecording("test"));
+                await channel.StartRecording("test");
+            }
+            //Task.WaitAll(done.ToArray());
+
             PauseBtn.IsEnabled = true;
             Recording = true;
         }
 
-        private void OnStopRecording(object sender, RoutedEventArgs e)
+        private async void OnStopRecording(object sender, RoutedEventArgs e)
         {
+            //List<Task> done = new List<Task>();
+            foreach (var channel in channels)
+            {
+                //done.Add(channel.StopRecording());
+                await channel.StopRecording();
+            }
+            //Task.WaitAll(done.ToArray());
+
             PauseBtn.IsEnabled = false;
             Recording = false;
         }
