@@ -14,6 +14,8 @@
             <Button x:Name="StopBtn" Content="Stop" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStopRecording"/>
             <Button x:Name="PauseBtn" Content="Pause" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
                     Click="OnTogglePauseRecording" IsEnabled="False"/>
+            <Button x:Name="PlayBtn" Content="Play" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
+                    Click="OnPlay" IsEnabled="False"/>
         </StackPanel>
         <Grid x:Name="LayoutGrid">
             <Grid.ColumnDefinitions>

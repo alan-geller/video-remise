@@ -10,9 +10,12 @@ using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
+using Windows.Media.Core;
 using Windows.Media.MediaProperties;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.Popups;
@@ -42,8 +45,10 @@ namespace FencingReplay
             CaptureElement captureElement;
             MediaFrameSourceGroup currentSource;
             MediaCapture currentCapture;
+            MediaPlayerElement mediaPlayerElement;
             DisplayRequest currentRequest;
             LowLagMediaRecording mediaRecording;
+            InMemoryRandomAccessStream currentRecordingStream;
 
             bool isPreviewing = false;
 
@@ -72,6 +77,12 @@ namespace FencingReplay
                 Grid.SetColumn(captureElement, gridColumn);
                 Grid.SetRow(captureElement, 1);
 
+                mediaPlayerElement = new MediaPlayerElement();
+                mediaPlayerElement.Visibility = Visibility.Collapsed;
+                mainPage.LayoutGrid.Children.Add(mediaPlayerElement);
+                Grid.SetColumn(mediaPlayerElement, gridColumn);
+                Grid.SetRow(mediaPlayerElement, 1);
+
                 Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
                 sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
 
@@ -89,9 +100,11 @@ namespace FencingReplay
 
             internal async Task<IAsyncAction> StartRecording(string fileBaseName)
             {
-                var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
-                StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
-                mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
+                currentRecordingStream = new InMemoryRandomAccessStream();
+                //var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
+                //StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
+                //mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
+                mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
                 return mediaRecording.StartAsync();
             }
 
@@ -99,6 +112,14 @@ namespace FencingReplay
             {
                 await mediaRecording.StopAsync();
                 return mediaRecording.FinishAsync();
+            }
+
+            internal void StartPlayback()
+            {
+                captureElement.Visibility = Visibility.Collapsed;
+                mediaPlayerElement.Visibility = Visibility.Visible;
+                mediaPlayerElement.Source = MediaSource.CreateFromStream(currentRecordingStream, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto).ToString());
+                mediaPlayerElement.MediaPlayer.Play();
             }
 
             private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
@@ -134,6 +155,8 @@ namespace FencingReplay
 
                         currentCapture.Dispose();
                         currentCapture = null;
+                        currentRecordingStream.Dispose();
+                        currentRecordingStream = null;
                     });
 
                     isPreviewing = false;
@@ -267,6 +290,7 @@ namespace FencingReplay
             //Task.WaitAll(done.ToArray());
 
             PauseBtn.IsEnabled = true;
+            PlayBtn.IsEnabled = true;
             Recording = true;
         }
 
@@ -281,6 +305,7 @@ namespace FencingReplay
             //Task.WaitAll(done.ToArray());
 
             PauseBtn.IsEnabled = false;
+            PlayBtn.IsEnabled = true;
             Recording = false;
         }
 
@@ -310,6 +335,14 @@ namespace FencingReplay
                     PauseBtn.Content = "Pause";
                     Paused = false;
                 }
+            }
+        }
+
+        private void OnPlay(object sender, RoutedEventArgs e)
+        {
+            foreach (var channel in channels)
+            {
+                channel.StartPlayback();
             }
         }
     }
