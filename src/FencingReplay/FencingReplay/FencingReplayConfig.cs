@@ -21,20 +21,38 @@ namespace FencingReplay
         List<MediaSourceInfo> videoSources;
         List<MediaSourceInfo> audioSources;
 
-        void ToFile(string filePath)
+        public int ReplaySecondsBeforeTrigger { get; set; } = 6;
+        public int ReplaySecondsAfterTrigger { get; set; } = 2;
+
+        public void ToFile(string filePath)
         {
             var serializer = new YamlDotNet.Serialization.SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
 
             File.WriteAllText(filePath, serializer.Serialize(this));
         }
 
-        static FencingReplayConfig FromFile(string filePath)
+        public static FencingReplayConfig FromFile(string filePath)
         {
             var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
 
-            var myConfig = deserializer.Deserialize<FencingReplayConfig>(File.ReadAllText(filePath));
-
-            return myConfig;
+            try
+            {
+                return deserializer.Deserialize<FencingReplayConfig>(File.ReadAllText(filePath));
+            }
+            catch (Exception)
+            {
+                var config =  new FencingReplayConfig();
+                config.ToFile(filePath);
+                return config;
+            }
         }
+
+        public static FencingReplayConfig FromFile()
+        {
+            var filePath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "config.yaml");
+
+            return FromFile(filePath);
+        }
+
     }
 }

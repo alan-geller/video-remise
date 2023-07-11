@@ -16,6 +16,8 @@
                     Click="OnTogglePauseRecording" IsEnabled="False"/>
             <Button x:Name="PlayBtn" Content="Play" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
                     Click="OnPlay" IsEnabled="False"/>
+            <Button x:Name="TriggerBtn" Content="Trigger" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
+                    Click="OnTrigger" IsEnabled="False"/>
         </StackPanel>
         <Grid x:Name="LayoutGrid">
             <Grid.ColumnDefinitions>
