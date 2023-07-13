@@ -122,9 +122,6 @@
     <Compile Include="ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DeviceConfig.xaml.cs">
-      <DependentUpon>DeviceConfig.xaml</DependentUpon>
-    </Compile>
     <Compile Include="FencingReplayConfig.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -154,10 +151,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ConfigPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DeviceConfig.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
