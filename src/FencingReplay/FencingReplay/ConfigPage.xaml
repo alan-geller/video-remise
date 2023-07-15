@@ -8,27 +8,35 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel Margin="5,5,5,5">
-        <TextBlock Text="Device Configuration" FontSize="36" FontWeight="Bold" Margin="0,10,0,10"/>
-        <ComboBox x:Name="triggerCombo" Width="900" FontSize="28" Header="Scoring machine (trigger) type:" PlaceholderText="Pick a scoring machine...">
+    <StackPanel Margin="5,5,5,5" Width="900">
+        <TextBlock Text="Device Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,10"/>
+        <ComboBox x:Name="triggerCombo" Width="890" FontSize="28" Header="Scoring machine (trigger) type:" 
+                  PlaceholderText="Pick a scoring machine..." Margin="5,10,0,10">
             <x:String>Swiss Timing (SG, Absolute, Favero FA-07</x:String>
             <x:String>Favero FA-05</x:String>
-            <x:String>Manual</x:String>
         </ComboBox>
-        <TextBlock Margin="0,30,0,10" FontSize="28">Video feed count:</TextBlock>
-        <StackPanel Orientation="Horizontal">
+        <CheckBox x:Name="manualTrigger" Margin="5,10,0,10" FontSize="28">Enable manual trigger</CheckBox>
+        <TextBlock Margin="5,30,0,10" FontSize="28">Video feed count:</TextBlock>
+        <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
             <RadioButton x:Name="videoCount1Btn" Content="1" FontSize="28" />
             <RadioButton x:Name="videoCount2Btn" Content="2" FontSize="28" />
             <RadioButton x:Name="videoCount3Btn" Content="3" FontSize="28" />
         </StackPanel>
-        <ComboBox x:Name="videoFeed1" Width="900" FontSize="28" Header="Camera:" PlaceholderText="Pick a camera">
+        <ComboBox x:Name="videoFeedLeft" Width="890" FontSize="28" Header="Left Camera:" 
+                  PlaceholderText="Pick a camera" Margin="5,0,0,0" IsEnabled="False">
             <x:String>dummy</x:String>
         </ComboBox>
-        <CheckBox x:Name="audioToggle" Margin="0,30,0,10" FontSize="28">Audio feed?</CheckBox>
-        <StackPanel Orientation="Horizontal" Margin="0,75,0,0" Spacing="20">
-            <Button x:Name="okBtn" Content="Apply and exit" FontSize="28" Width="250" BorderThickness="4" BorderBrush="Black"/>
-            <Button x:Name="saveBtn" Content="Save and exit" FontSize="28" Width="250" />
-            <Button x:Name="exportBtn" Content="Export to a file" FontSize="28" Width="250" />
+        <ComboBox x:Name="videoFeedCenter" Width="890" FontSize="28" Header="Center Camera:" 
+                  PlaceholderText="Pick a camera" Margin="5,0,0,0">
+            <x:String>dummy</x:String>
+        </ComboBox>
+        <ComboBox x:Name="videoFeedRight" Width="890" FontSize="28" Header="Right Camera:" 
+                  PlaceholderText="Pick a camera" Margin="5,0,0,0" IsEnabled="False">
+            <x:String>dummy</x:String>
+        </ComboBox>
+        <CheckBox x:Name="audioToggle" Margin="5,30,0,10" FontSize="28">Audio feed?</CheckBox>
+        <StackPanel Orientation="Horizontal" Margin="5,75,0,0" Spacing="20" HorizontalAlignment="Right">
+            <Button x:Name="okBtn" Content="OK" FontSize="28" Width="250"/>
             <Button x:Name="cancelBtn" Content="Cancel" FontSize="28" Width="250" />
         </StackPanel>
     </StackPanel>

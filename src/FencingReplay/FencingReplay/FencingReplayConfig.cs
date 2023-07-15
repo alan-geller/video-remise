@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Documents;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace FencingReplay
@@ -18,8 +19,11 @@ namespace FencingReplay
 
     internal class FencingReplayConfig
     {
-        List<MediaSourceInfo> videoSources;
-        List<MediaSourceInfo> audioSources;
+        public List<MediaSourceInfo> VideoSources { get; set; } = new List<MediaSourceInfo>();
+        public MediaSourceInfo AudioSources { get; set; } = null;
+
+        public string TriggerProtocol { get; set; } = "";
+        public bool ManualTriggerEnabled { get; set; } = true;
 
         public int ReplaySecondsBeforeTrigger { get; set; } = 6;
         public int ReplaySecondsAfterTrigger { get; set; } = 2;

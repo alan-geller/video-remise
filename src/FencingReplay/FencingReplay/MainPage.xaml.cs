@@ -156,6 +156,11 @@ namespace FencingReplay
                 }
             }
         }
+
+        private void OnDeviceConfig(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ConfigPage));
+        }
     }
 }
 
