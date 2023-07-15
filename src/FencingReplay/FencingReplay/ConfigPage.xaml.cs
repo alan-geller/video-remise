@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Capture.Frames;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,15 +24,17 @@ namespace FencingReplay
     /// </summary>
     public sealed partial class ConfigPage : Page
     {
+        private FencingReplayConfig config;
+
         public ConfigPage()
         {
             this.InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            var config = (Application.Current as App).Config;
+            config = (Application.Current as App).Config;
 
             // Populate from the current confiuration
             if (config.TriggerProtocol != "")
@@ -67,6 +71,72 @@ namespace FencingReplay
                     videoFeedLeft.IsEnabled = false;
                     videoFeedCenter.IsEnabled = false;
                     videoFeedRight.IsEnabled = false;
+                    break;
+            }
+
+            videoFeedLeft.Items.Clear();
+            videoFeedCenter.Items.Clear();
+            videoFeedRight.Items.Clear();
+            var sources = await MediaFrameSourceGroup.FindAllAsync();
+            foreach (var source in sources)
+            {
+                videoFeedLeft.Items.Add(source.DisplayName);
+                videoFeedCenter.Items.Add(source.DisplayName);
+                videoFeedRight.Items.Add(source.DisplayName);
+            }
+        }
+
+        private void OnCameraCount1(object sender, RoutedEventArgs e)
+        {
+            videoFeedLeft.IsEnabled = false;
+            videoFeedCenter.IsEnabled = true;
+            videoFeedRight.IsEnabled = false;
+
+            switch (config.VideoSources.Count)
+            {
+                case 2:
+                    config.VideoSources.RemoveAt(1);
+                    break;
+                case 3:
+                    config.VideoSources.RemoveAt(0);
+                    config.VideoSources.RemoveAt(2);
+                    break;
+            }
+
+            if (config.VideoSources.Count == 1)
+            {
+                videoFeedCenter.SelectedValue = config.VideoSources[0].groupDisplayName;
+            }
+        }
+
+        private void OnCameraCount2(object sender, RoutedEventArgs e)
+        {
+            videoFeedLeft.IsEnabled = true;
+            videoFeedCenter.IsEnabled = false;
+            videoFeedRight.IsEnabled = true;
+
+            switch (config.VideoSources.Count)
+            {
+                case 3:
+                    config.VideoSources.RemoveAt(2);
+                    break;
+            }
+        }
+
+        private void OnCameraCount3(object sender, RoutedEventArgs e)
+        {
+            videoFeedLeft.IsEnabled = true;
+            videoFeedCenter.IsEnabled = true;
+            videoFeedRight.IsEnabled = true;
+
+            switch (config.VideoSources.Count)
+            {
+                case 2:
+                    config.VideoSources.RemoveAt(1);
+                    break;
+                case 3:
+                    config.VideoSources.RemoveAt(0);
+                    config.VideoSources.RemoveAt(2);
                     break;
             }
         }

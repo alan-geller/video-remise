@@ -37,6 +37,13 @@ namespace FencingReplay
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            config = (Application.Current as App).Config;
 
             channels = new List<VideoChannel>();
             channels.Add(new VideoChannel(this));
@@ -45,12 +52,7 @@ namespace FencingReplay
             Paused = false;
             Recording = false;
 
-            config = (Application.Current as App).Config;
-        }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
         }
 
         private MediaFrameSourceGroup FindMediaSource(string displayName)

@@ -18,9 +18,9 @@
         <CheckBox x:Name="manualTrigger" Margin="5,10,0,10" FontSize="28">Enable manual trigger</CheckBox>
         <TextBlock Margin="5,30,0,10" FontSize="28">Video feed count:</TextBlock>
         <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
-            <RadioButton x:Name="videoCount1Btn" Content="1" FontSize="28" />
-            <RadioButton x:Name="videoCount2Btn" Content="2" FontSize="28" />
-            <RadioButton x:Name="videoCount3Btn" Content="3" FontSize="28" />
+            <RadioButton x:Name="videoCount1Btn" Content="1" FontSize="28" Click="OnCameraCount1"/>
+            <RadioButton x:Name="videoCount2Btn" Content="2" FontSize="28" Click="OnCameraCount2" />
+            <RadioButton x:Name="videoCount3Btn" Content="3" FontSize="28" Click="OnCameraCount3" />
         </StackPanel>
         <ComboBox x:Name="videoFeedLeft" Width="890" FontSize="28" Header="Left Camera:" 
                   PlaceholderText="Pick a camera" Margin="5,0,0,0" IsEnabled="False">
