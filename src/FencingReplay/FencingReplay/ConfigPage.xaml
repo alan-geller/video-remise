@@ -36,8 +36,8 @@
         </ComboBox>
         <CheckBox x:Name="audioToggle" Margin="5,30,0,10" FontSize="28">Audio feed?</CheckBox>
         <StackPanel Orientation="Horizontal" Margin="5,75,0,0" Spacing="20" HorizontalAlignment="Right">
-            <Button x:Name="okBtn" Content="OK" FontSize="28" Width="250"/>
-            <Button x:Name="cancelBtn" Content="Cancel" FontSize="28" Width="250" />
+            <Button x:Name="okBtn" Content="OK" FontSize="28" Width="250" Click="OnSave"/>
+            <Button x:Name="cancelBtn" Content="Cancel" FontSize="28" Width="250" Click="OnCancel"/>
         </StackPanel>
     </StackPanel>
 </Page>

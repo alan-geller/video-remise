@@ -9,14 +9,14 @@
   IgnorableNamespaces="uap mp uap3 uap6">
 
   <Identity
-    Name="18bd94ee-af22-4ea8-8a79-d63fd10f8a8a"
+    Name="FencingReplay"
     Publisher="CN=Alan"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="18bd94ee-af22-4ea8-8a79-d63fd10f8a8a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>FencingReplay</DisplayName>
+    <DisplayName>Fencing Replay</DisplayName>
     <PublisherDisplayName>Alan</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -51,6 +51,7 @@
     <uap6:Capability Name="graphicsCapture"/>
     <uap:Capability Name="musicLibrary"/>
     <uap:Capability Name="picturesLibrary"/>
+    <uap3:Capability Name="backgroundMediaPlayback"/>
     <DeviceCapability Name="microphone"/>
     <DeviceCapability Name="webcam"/>
     <DeviceCapability Name="lowLevel"/>

@@ -71,6 +71,20 @@ namespace FencingReplay
             }
         }
 
+        private void OnSave(object sender, RoutedEventArgs e)
+        {
+            // Populate the config object
+            var config = (Application.Current as App).Config;
 
+            config.Save();
+
+            Frame.Navigate(typeof(MainPage), config);
+        }
+
+        private void OnCancel(object sender, RoutedEventArgs e)
+        {
+            var config = (Application.Current as App).Config;
+            Frame.Navigate(typeof(MainPage), config);
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Devices.Enumeration;
 using Windows.UI.Xaml.Documents;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -11,22 +12,39 @@ namespace FencingReplay
 {
     internal class MediaSourceInfo
     {
-        string groupId;
-        string groupDisplayName;
-        string sourceId;
-
+        public string groupId;
+        public string groupDisplayName;
+        public string sourceId;
     }
 
     internal class FencingReplayConfig
     {
         public List<MediaSourceInfo> VideoSources { get; set; } = new List<MediaSourceInfo>();
-        public MediaSourceInfo AudioSources { get; set; } = null;
+        public MediaSourceInfo AudioSource { get; set; } = null;
 
         public string TriggerProtocol { get; set; } = "";
         public bool ManualTriggerEnabled { get; set; } = true;
 
         public int ReplaySecondsBeforeTrigger { get; set; } = 6;
         public int ReplaySecondsAfterTrigger { get; set; } = 2;
+
+        public void Save()
+        {
+            var appSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+            // Device settings
+            var deviceSettings = appSettings.CreateContainer("Device", Windows.Storage.ApplicationDataCreateDisposition.Always);
+            deviceSettings.Values["VideoCount"] = VideoSources.Count;
+            int i = 0;
+            foreach (var src in VideoSources)
+            {
+                deviceSettings.Values[$"VideoSource{++i}"] = src.groupDisplayName;
+            }
+            deviceSettings.Values["TriggerProtocol"] = TriggerProtocol;
+            deviceSettings.Values["ManualTriggerEnabled"] = ManualTriggerEnabled;
+            deviceSettings.Values["AusioEnabled"] = AudioSource != null;
+        }
+
 
         public void ToFile(string filePath)
         {
