@@ -10,23 +10,25 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace FencingReplay
 {
-    internal class MediaSourceInfo
-    {
-        public string groupId;
-        public string groupDisplayName;
-        public string sourceId;
-    }
-
     internal class FencingReplayConfig
     {
-        public List<MediaSourceInfo> VideoSources { get; set; } = new List<MediaSourceInfo>();
-        public MediaSourceInfo AudioSource { get; set; } = null;
+        public List<string> VideoSources { get; set; } = new List<string>();
+        public string AudioSource { get; set; } = null;
 
         public string TriggerProtocol { get; set; } = "";
         public bool ManualTriggerEnabled { get; set; } = true;
 
         public int ReplaySecondsBeforeTrigger { get; set; } = 6;
         public int ReplaySecondsAfterTrigger { get; set; } = 2;
+
+        public bool IsReadyToGo
+        {
+            get
+            {
+                return (VideoSources.Count > 0) &&
+                    (TriggerProtocol != "" || ManualTriggerEnabled);
+            }
+        }
 
         public void Save()
         {
@@ -38,11 +40,11 @@ namespace FencingReplay
             int i = 0;
             foreach (var src in VideoSources)
             {
-                deviceSettings.Values[$"VideoSource{++i}"] = src.groupDisplayName;
+                deviceSettings.Values[$"VideoSource{++i}"] = src;
             }
             deviceSettings.Values["TriggerProtocol"] = TriggerProtocol;
             deviceSettings.Values["ManualTriggerEnabled"] = ManualTriggerEnabled;
-            deviceSettings.Values["AusioEnabled"] = AudioSource != null;
+            deviceSettings.Values["AudioEnabled"] = AudioSource != null;
         }
 
 
