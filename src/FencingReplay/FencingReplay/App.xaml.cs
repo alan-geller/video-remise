@@ -33,7 +33,7 @@ namespace FencingReplay
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-            Config = FencingReplayConfig.FromFile();
+            Config = FencingReplayConfig.Load();
         }
 
         /// <summary>
