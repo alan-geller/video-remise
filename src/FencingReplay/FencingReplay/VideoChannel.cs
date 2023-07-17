@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
@@ -36,6 +37,23 @@ namespace FencingReplay
 
             bool isPreviewing = false;
             bool isRecording = false;
+
+            public string VideoSource 
+            { 
+                get { return currentSource.DisplayName; }
+                set 
+                {
+                    var source = FindMediaSource(value);
+                    if (source != null)
+                    {
+                        SetSource(source);
+                    }
+                    else
+                    {
+                        ClearSource();
+                    }
+                }
+            }
 
             static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
 

@@ -46,8 +46,10 @@ namespace FencingReplay
             config = (Application.Current as App).Config;
 
             channels = new List<VideoChannel>();
-            channels.Add(new VideoChannel(this));
-            channels.Add(new VideoChannel(this));
+            foreach (var source in config.VideoSources)
+            {
+                channels.Add(new VideoChannel(this));
+            }
 
             Paused = false;
             Recording = false;
