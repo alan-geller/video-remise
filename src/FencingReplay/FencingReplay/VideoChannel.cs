@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -25,7 +26,7 @@ namespace FencingReplay
         {
             MainPage mainPage;
             int gridColumn;
-            ListBox sourceSelector;
+            //ListBox sourceSelector;
             CaptureElement captureElement;
             MediaFrameSourceGroup currentSource;
             MediaCapture currentCapture;
@@ -69,11 +70,11 @@ namespace FencingReplay
                 }
                 mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = columnWidth });
 
-                sourceSelector = new ListBox();
-                PopulateSourceList(sourceSelector);
-                mainPage.LayoutGrid.Children.Add(sourceSelector);
-                Grid.SetColumn(sourceSelector, gridColumn);
-                Grid.SetRow(sourceSelector, 0);
+                //sourceSelector = new ListBox();
+                //PopulateSourceList(sourceSelector);
+                //mainPage.LayoutGrid.Children.Add(sourceSelector);
+                //Grid.SetColumn(sourceSelector, gridColumn);
+                //Grid.SetRow(sourceSelector, 0);
 
                 captureElement = new CaptureElement();
                 mainPage.LayoutGrid.Children.Add(captureElement);
@@ -86,8 +87,8 @@ namespace FencingReplay
                 Grid.SetColumn(mediaPlayerElement, gridColumn);
                 Grid.SetRow(mediaPlayerElement, 1);
 
-                Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
-                sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
+                //Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
+                //sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
 
                 currentRequest = new DisplayRequest();
             }
@@ -142,18 +143,18 @@ namespace FencingReplay
                 mediaPlayerElement.MediaPlayer.Play();
             }
 
-            private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
-            {
-                var source = FindMediaSource(channel.sourceSelector.SelectedItem.ToString());
-                if (source != null)
-                {
-                    channel.SetSource(source);
-                }
-                else
-                {
-                    channel.ClearSource();
-                }
-            }
+            //private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
+            //{
+            //    var source = FindMediaSource(channel.sourceSelector.SelectedItem.ToString());
+            //    if (source != null)
+            //    {
+            //        channel.SetSource(source);
+            //    }
+            //    else
+            //    {
+            //        channel.ClearSource();
+            //    }
+            //}
 
             async void ClearSource()
             {
@@ -217,9 +218,17 @@ namespace FencingReplay
                 }
             }
 
+            public static async Task Initialize()
+            {
+                if (CurrentSources == null)
+                {
+                    // We use the GetResults method to forcibly de-async; that is, to block.
+                    CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
+                }
+            }
+
             static MediaFrameSourceGroup FindMediaSource(string displayName)
             {
-                // This method will never get called when CurrentSources is uninitialized
                 foreach (var frameSource in CurrentSources)
                 {
                     if (displayName == frameSource.DisplayName)
@@ -242,20 +251,20 @@ namespace FencingReplay
                 return "";
             }
 
-            static async void PopulateSourceList(ListBox listBox)
-            {
-                if (CurrentSources == null)
-                {
-                    CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
-                }
+            //static async void PopulateSourceList(ListBox listBox)
+            //{
+            //    if (CurrentSources == null)
+            //    {
+            //        CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
+            //    }
 
-                listBox.Items.Clear();
-                foreach (var frameSource in CurrentSources)
-                {
-                    listBox.Items.Add(frameSource.DisplayName);
-                }
-                listBox.Items.Add("--none--");
-            }
+            //    listBox.Items.Clear();
+            //    foreach (var frameSource in CurrentSources)
+            //    {
+            //        listBox.Items.Add(frameSource.DisplayName);
+            //    }
+            //    listBox.Items.Add("--none--");
+            //}
         }
     }
 }

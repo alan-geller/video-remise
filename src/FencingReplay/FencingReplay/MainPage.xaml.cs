@@ -39,22 +39,22 @@ namespace FencingReplay
             this.InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            await VideoChannel.Initialize();
 
             config = (Application.Current as App).Config;
 
             channels = new List<VideoChannel>();
             foreach (var source in config.VideoSources)
             {
-                channels.Add(new VideoChannel(this));
+                channels.Add(new VideoChannel(this) { VideoSource = source });
             }
 
             Paused = false;
             Recording = false;
-
-
         }
 
         private MediaFrameSourceGroup FindMediaSource(string displayName)
