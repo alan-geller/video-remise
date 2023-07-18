@@ -222,5 +222,13 @@ namespace FencingReplay
             var config = (Application.Current as App).Config;
             Frame.Navigate(typeof(MainPage), false);
         }
+
+        private void VerifyDigitEntry(object sender, TextBoxBeforeTextChangingEventArgs e)
+        {
+            if (!e.NewText.All(char.IsDigit))
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }
