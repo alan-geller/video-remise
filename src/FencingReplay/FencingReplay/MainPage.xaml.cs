@@ -29,6 +29,7 @@ namespace FencingReplay
     {
         List<VideoChannel> channels;
 
+        public int CurrentWeapon { get; set; }
         public bool Paused { get; set; }
         public bool Recording { get; set; }
 
@@ -147,16 +148,17 @@ namespace FencingReplay
 
         private async void OnTrigger(object sender, RoutedEventArgs e)
         {
-            if (config.ReplaySecondsAfterTrigger > 0)
+            if (config.ReplaySecondsAfterTrigger[CurrentWeapon] > 0)
             {
-                await Task.Delay(1000 * config.ReplaySecondsAfterTrigger);
+                await Task.Delay(1000 * config.ReplaySecondsAfterTrigger[CurrentWeapon]);
                 foreach (var channel in channels)
                 {
                     await channel.StopRecording();
                 }
                 foreach (var channel in channels)
                 {
-                    channel.StartLoop(config.ReplaySecondsAfterTrigger + config.ReplaySecondsBeforeTrigger);
+                    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
+                        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
                 }
             }
         }

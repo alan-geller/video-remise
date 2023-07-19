@@ -13,14 +13,18 @@ namespace FencingReplay
 {
     internal class FencingReplayConfig
     {
+        public const int Epee = 0;
+        public const int Foil = 1;
+        public const int Saber = 2;
+
         public List<string> VideoSources { get; set; } = new List<string>();
         public string AudioSource { get; set; } = null;
 
         public string TriggerProtocol { get; set; } = "";
         public bool ManualTriggerEnabled { get; set; } = true;
 
-        public int ReplaySecondsBeforeTrigger { get; set; } = 6;
-        public int ReplaySecondsAfterTrigger { get; set; } = 2;
+        public int[] ReplaySecondsBeforeTrigger { get; } = { 6, 6, 6 };
+        public int[] ReplaySecondsAfterTrigger { get; } = { 2, 2, 2 };
 
         public bool IsReadyToGo
         {
@@ -51,6 +55,11 @@ namespace FencingReplay
             // Timing settings
             var timingSettings = appSettings.CreateContainer("Timing", 
                 ApplicationDataCreateDisposition.Always);
+            for (i = 0; i < 3; i++)
+            {
+                timingSettings.Values[$"PreTrigger{i}"] = ReplaySecondsBeforeTrigger[i];
+                timingSettings.Values[$"PostTrigger{i}"] = ReplaySecondsAfterTrigger[i];
+            }
         }
 
         public void ToFile(string filePath)
@@ -87,6 +96,22 @@ namespace FencingReplay
                 // Ignore this
             }
 
+            try
+            {
+                // Throws if the container doesn't exist
+                var timingSettings = appSettings.CreateContainer("Timing",
+                    ApplicationDataCreateDisposition.Existing);
+                for (int i = 0; i < 3; i++)
+                {
+                    config.ReplaySecondsBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
+                    config.ReplaySecondsAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore this
+            }
+
             return config;
         }
 
@@ -113,5 +138,19 @@ namespace FencingReplay
             return FromFile(filePath);
         }
 
+        public static string WeaponName(int i)
+        {
+            switch (i)
+            {
+                case Epee:
+                    return "epee";
+                case Foil:
+                    return "foil";
+                case Saber:
+                    return "saber";
+                default:
+                    return "undefined";
+            }
+        }
     }
 }

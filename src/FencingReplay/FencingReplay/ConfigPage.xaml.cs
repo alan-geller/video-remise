@@ -90,6 +90,13 @@ namespace FencingReplay
                     videoFeedRight.IsEnabled = false;
                     break;
             }
+
+            epeePre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Epee].ToString();
+            epeePost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Epee].ToString();
+            foilPre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Foil].ToString();
+            foilPost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Foil].ToString();
+            saberPre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Saber].ToString();
+            saberPost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Saber].ToString();
         }
 
         private void OnCameraCount1(object sender, RoutedEventArgs e)
@@ -174,6 +181,11 @@ namespace FencingReplay
 
         private void OnSave(object sender, RoutedEventArgs e)
         {
+            string SameOrDefault(string s, string def)
+            {
+                return string.IsNullOrWhiteSpace(s) ? def : s;
+            }
+
             // Populate the config object
             var config = (Application.Current as App).Config;
 
@@ -211,6 +223,19 @@ namespace FencingReplay
                 }
             }
             config.VideoSources = newSources;
+
+            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Epee] = 
+                int.Parse(SameOrDefault(epeePre.Text, "0"));
+            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Epee] = 
+                int.Parse(SameOrDefault(epeePost.Text, "0"));
+            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Foil] = 
+                int.Parse(SameOrDefault(foilPre.Text, "0"));
+            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Foil] = 
+                int.Parse(SameOrDefault(foilPost.Text, "0"));
+            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Saber] = 
+                int.Parse(SameOrDefault(saberPre.Text, "0"));
+            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Saber] = 
+                int.Parse(SameOrDefault(saberPost.Text, "0"));
 
             config.Save();
 
