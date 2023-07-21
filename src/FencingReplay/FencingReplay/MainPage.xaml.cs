@@ -35,6 +35,17 @@ namespace FencingReplay
 
         private FencingReplayConfig config;
 
+        private bool IsMatchSetUp { 
+            get
+            {
+                return ((epeeBtn.IsChecked == true) ||
+                    (foilBtn.IsChecked == true) ||
+                    (saberBtn.IsChecked == true)) &&
+                    !string.IsNullOrWhiteSpace(leftFencer.Text) &&
+                    !string.IsNullOrWhiteSpace(righttFencer.Text);
+            } 
+        }
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -52,6 +63,15 @@ namespace FencingReplay
             foreach (var source in config.VideoSources)
             {
                 channels.Add(new VideoChannel(this) { VideoSource = source });
+            }
+
+            if (IsMatchSetUp)
+            {
+                matchSetupPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                matchSetupPanel.Visibility = Visibility.Visible;
             }
 
             Paused = false;
@@ -166,6 +186,54 @@ namespace FencingReplay
         private void OnDeviceConfig(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(ConfigPage));
+        }
+
+        private void OnSetupMatch(object sender, RoutedEventArgs e)
+        {
+            if (matchSetupPanel.Visibility == Visibility.Visible)
+            {
+                matchSetupPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                matchSetupPanel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void UpdateMatchInfo()
+        {
+            var weapon = char.ToUpper(FencingReplayConfig.WeaponName(CurrentWeapon)[0]).ToString()
+                + FencingReplayConfig.WeaponName(CurrentWeapon).Substring(1);
+            var text = CommandBar.Content as TextBlock;
+            text.Text = $"{weapon}: {leftFencer.Text} vs. {righttFencer.Text}";
+        }
+
+        private void epeeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentWeapon = FencingReplayConfig.Epee;
+            UpdateMatchInfo();
+        }
+
+        private void foilBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentWeapon = FencingReplayConfig.Foil;
+            UpdateMatchInfo();
+        }
+
+        private void saberBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentWeapon = FencingReplayConfig.Saber;
+            UpdateMatchInfo();
+        }
+
+        private void leftFencer_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateMatchInfo();
+        }
+
+        private void righttFencer_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateMatchInfo();
         }
     }
 }

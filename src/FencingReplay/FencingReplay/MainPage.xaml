@@ -9,7 +9,19 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel Orientation="Vertical">
-        <StackPanel Orientation="Horizontal">
+        <CommandBar x:Name="CommandBar">
+            <AppBarButton Icon="People" Label="Match Setup" Click="OnSetupMatch"/>
+            <AppBarButton x:Name="StartBtn" Icon="Camera" Label="Start" Click="OnStartRecording"/>
+            <AppBarButton x:Name="StopBtn" Icon="Stop" Label="Stop" Click="OnStopRecording"/>
+            <AppBarButton x:Name="PlayBtn" Icon="Play" Label="Play" Click="OnPlay"/>
+            <AppBarButton x:Name="TriggerBtn" Icon="Flag" Label="Trigger" Click="OnTrigger"/>
+            <AppBarButton x:Name="PauseBtn" Icon="Pause" Label="Pause" Click="OnTogglePauseRecording"/>
+            <AppBarButton x:Name="DeviceCfgBtn" Icon="Setting" Label="Settings" Click="OnDeviceConfig"/>
+            <CommandBar.Content>
+                <TextBlock Text="Enter match info" FontSize="20" FontWeight="Bold" Margin="5,0,0,0"/>
+            </CommandBar.Content>
+        </CommandBar>
+        <!--<StackPanel Orientation="Horizontal">
             <Button x:Name="StartBtn" Content="Start" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStartRecording"/>
             <Button x:Name="StopBtn" Content="Stop" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStopRecording"/>
             <Button x:Name="PauseBtn" Content="Pause" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
@@ -20,6 +32,21 @@
                     Click="OnTrigger" IsEnabled="False"/>
             <Button x:Name="DeviceCfgBtn" Content="Device Setup" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
                     Click="OnDeviceConfig" IsEnabled="True"/>
+        </StackPanel>-->
+        <StackPanel x:Name="matchSetupPanel" Orientation="Vertical" Margin="5,5,5,5" Visibility="Collapsed">
+            <TextBlock Text="Match Set-up" FontSize="28" FontWeight="Bold" Margin="5,10,0,10"/>
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="epeeBtn" FontSize="20" Content="Epee" Click="epeeBtn_Click"/>
+                <RadioButton x:Name="foilBtn" FontSize="20" Content="Foil" Click="foilBtn_Click"/>
+                <RadioButton x:Name="saberBtn" FontSize="20" Content="Saber" Click="saberBtn_Click"/>
+                <TextBox x:Name="leftFencer" FontSize="20" Margin="20,0,0,0" 
+                         PlaceholderText="Enter left fencer here" Width="400" TextChanged="leftFencer_TextChanged"/>
+                <TextBlock Text="vs." FontSize="20" />
+                <TextBox x:Name="righttFencer" FontSize="20" PlaceholderText="Enter right fencer here" Width="400"
+                         TextChanged="righttFencer_TextChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+            </StackPanel>
         </StackPanel>
         <Grid x:Name="LayoutGrid">
             <Grid.ColumnDefinitions>
