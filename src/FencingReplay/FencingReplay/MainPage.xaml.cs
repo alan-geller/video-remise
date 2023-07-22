@@ -73,9 +73,12 @@ namespace FencingReplay
             {
                 matchSetupPanel.Visibility = Visibility.Visible;
             }
+            UpdateMatchInfo();
 
             Paused = false;
             Recording = false;
+
+            SetStatus("Ready");
         }
 
         private MediaFrameSourceGroup FindMediaSource(string displayName)
@@ -111,6 +114,7 @@ namespace FencingReplay
             PlayBtn.IsEnabled = true;
             TriggerBtn.IsEnabled = true;
             Recording = true;
+            SetStatus("Recording");
         }
 
         private async void OnStopRecording(object sender, RoutedEventArgs e)
@@ -127,6 +131,7 @@ namespace FencingReplay
             PlayBtn.IsEnabled = true;
             TriggerBtn.IsEnabled = false;
             Recording = false;
+            SetStatus("Ready");
         }
 
         private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
@@ -143,6 +148,7 @@ namespace FencingReplay
                     Task.WaitAll(done.ToArray());
                     PauseBtn.Content = "Resume";
                     Paused = true;
+                    SetStatus("Paused");
                 }
                 else
                 {
@@ -154,6 +160,7 @@ namespace FencingReplay
                     Task.WaitAll(done.ToArray());
                     PauseBtn.Content = "Pause";
                     Paused = false;
+                    SetStatus("Recording");
                 }
             }
         }
@@ -164,6 +171,7 @@ namespace FencingReplay
             {
                 channel.StartPlayback();
             }
+            SetStatus("Playing");
         }
 
         private async void OnTrigger(object sender, RoutedEventArgs e)
@@ -179,6 +187,7 @@ namespace FencingReplay
                 {
                     channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
                         config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
+                    SetStatus("Replaying");
                 }
             }
         }
@@ -204,8 +213,15 @@ namespace FencingReplay
         {
             var weapon = char.ToUpper(FencingReplayConfig.WeaponName(CurrentWeapon)[0]).ToString()
                 + FencingReplayConfig.WeaponName(CurrentWeapon).Substring(1);
-            var text = CommandBar.Content as TextBlock;
-            text.Text = $"{weapon}: {leftFencer.Text} vs. {righttFencer.Text}";
+            matchInfo.Text = IsMatchSetUp ?
+                $"{weapon}: {leftFencer.Text} vs. {righttFencer.Text}" :
+                "Set up match";
+        }
+
+        private void SetStatus(string status)
+        {
+            var content = CommandBar.Content as TextBlock;
+            content.Text = status;
         }
 
         private void epeeBtn_Click(object sender, RoutedEventArgs e)
