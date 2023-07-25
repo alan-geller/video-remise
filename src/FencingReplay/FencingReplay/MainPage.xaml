@@ -44,14 +44,22 @@
             <TextBox x:Name="rightFencer" FontSize="18" PlaceholderText="Enter right fencer here" Width="400"
                         TextChanged="rightFencer_TextChanged"/>
         </StackPanel>
-        <Grid x:Name="LayoutGrid">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-        </Grid>
+        <Canvas x:Name="VideoCanvas">
+            <StackPanel Orientation="Horizontal" Height="50" Canvas.Left="0" Canvas.Top="0"
+                        Canvas.ZIndex="1">
+                <Rectangle x:Name="leftLight" Width="200" Fill="Red" Opacity="0"/>
+                <Rectangle x:Name="lightSpacer" MinWidth="100" />
+                <Rectangle x:Name="rightLight" Width="200" Fill="Green" Opacity="0"/>
+            </StackPanel>
+            <Grid x:Name="LayoutGrid" Canvas.Left="0" Canvas.Top="0"
+                        Canvas.ZIndex="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+            </Grid>
+        </Canvas>
     </StackPanel>
 </Page>

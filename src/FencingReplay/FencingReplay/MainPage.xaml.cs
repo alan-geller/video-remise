@@ -1,18 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
+using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
@@ -35,6 +39,7 @@ namespace FencingReplay
         public bool Playing { get; set; }
 
         private FencingReplayConfig config;
+        private Visual VideoCanvasVisual;
 
         private bool IsMatchSetUp { 
             get
@@ -56,7 +61,11 @@ namespace FencingReplay
         {
             base.OnNavigatedTo(e);
 
+            Frame.SizeChanged += HandleResize;
+
             await VideoChannel.Initialize();
+
+            AdjustVideoWidths(Frame.ActualWidth);
 
             config = (Application.Current as App).Config;
 
@@ -80,7 +89,50 @@ namespace FencingReplay
             Recording = false;
             Playing = false;
 
+            VideoCanvasVisual = ElementCompositionPreview.GetElementVisual(VideoCanvas);
+
             SetStatus("Ready");
+        }
+
+        private void AdjustVideoWidths(double frameWidth)
+        {
+            var lightWidth = Math.Max(frameWidth / 3.0, 100);
+            leftLight.Width = lightWidth;
+            rightLight.Width = lightWidth;
+            lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
+
+            LayoutGrid.Width = frameWidth;
+            if (LayoutGrid.ColumnDefinitions.Count > 0)
+            {
+                var videoWidth = Math.Max(frameWidth / LayoutGrid.ColumnDefinitions.Count, 150);
+                foreach (var col in LayoutGrid.ColumnDefinitions)
+                {
+                    col.Width = new GridLength(videoWidth);
+                }
+                foreach (var child in LayoutGrid.Children)
+                {
+                    var mc = child as CaptureElement;
+                    if (mc != null)
+                    {
+                        mc.Width = videoWidth;
+                    }
+                    var mp = child as MediaPlayerElement;
+                    if (mp != null)
+                    {
+                        mp.Width = videoWidth;
+                    }
+                }
+            }
+        }
+
+        private void HandleResize(object sender, SizeChangedEventArgs e)
+        {
+            AdjustVideoWidths(e.NewSize.Width);
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            Frame.SizeChanged -= HandleResize;
         }
 
         private MediaFrameSourceGroup FindMediaSource(string displayName)
@@ -113,6 +165,9 @@ namespace FencingReplay
                     await channel.StartRecording("test");
                 }
                 //Task.WaitAll(done.ToArray());
+
+                leftLight.Opacity = 0.50;
+                rightLight.Opacity = 0.50;
 
                 PauseBtn.IsEnabled = true;
                 PlayBtn.IsEnabled = true;

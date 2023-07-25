@@ -63,29 +63,18 @@ namespace FencingReplay
                 mainPage = page;
 
                 gridColumn = mainPage.LayoutGrid.ColumnDefinitions.Count;
-                var columnWidth = 300;
-                foreach (var cd in mainPage.LayoutGrid.ColumnDefinitions)
-                {
-                    cd.MaxWidth = columnWidth;
-                }
-                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = columnWidth });
-
-                //sourceSelector = new ListBox();
-                //PopulateSourceList(sourceSelector);
-                //mainPage.LayoutGrid.Children.Add(sourceSelector);
-                //Grid.SetColumn(sourceSelector, gridColumn);
-                //Grid.SetRow(sourceSelector, 0);
+                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
                 captureElement = new CaptureElement();
                 mainPage.LayoutGrid.Children.Add(captureElement);
                 Grid.SetColumn(captureElement, gridColumn);
-                Grid.SetRow(captureElement, 1);
+                Grid.SetRow(captureElement, 0);
 
                 mediaPlayerElement = new MediaPlayerElement();
                 mediaPlayerElement.Visibility = Visibility.Collapsed;
                 mainPage.LayoutGrid.Children.Add(mediaPlayerElement);
                 Grid.SetColumn(mediaPlayerElement, gridColumn);
-                Grid.SetRow(mediaPlayerElement, 1);
+                Grid.SetRow(mediaPlayerElement, 0);
 
                 //Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
                 //sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
