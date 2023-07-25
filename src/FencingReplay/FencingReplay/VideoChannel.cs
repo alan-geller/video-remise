@@ -58,12 +58,14 @@ namespace FencingReplay
 
             static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
 
-            internal VideoChannel(MainPage page)
+            internal VideoChannel(int gridColumn, MainPage page)
             {
                 mainPage = page;
 
-                gridColumn = mainPage.LayoutGrid.ColumnDefinitions.Count;
-                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                while (mainPage.LayoutGrid.ColumnDefinitions.Count <= gridColumn)
+                {
+                    mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width=GridLength.Auto });
+                }
 
                 captureElement = new CaptureElement();
                 mainPage.LayoutGrid.Children.Add(captureElement);
@@ -80,6 +82,26 @@ namespace FencingReplay
                 //sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
 
                 currentRequest = new DisplayRequest();
+            }
+
+            internal async Task ShutdownAsync()
+            {
+                if (isRecording)
+                {
+                    await StopRecording();
+                }
+                if (mediaPlayerElement.MediaPlayer != null)
+                {
+                    mediaPlayerElement.MediaPlayer.Dispose();
+                }
+                if (currentRecordingStream != null)
+                {
+                    currentRecordingStream.Dispose();
+                }
+
+                captureElement.Visibility = Visibility.Collapsed;
+                mediaPlayerElement.Visibility = Visibility.Collapsed;
+                mainPage.LayoutGrid.ColumnDefinitions.RemoveAt(gridColumn);
             }
 
             internal async Task Pause()
@@ -131,19 +153,6 @@ namespace FencingReplay
                 mediaPlayerElement.MediaPlayer.PlaybackSession.Position = System.TimeSpan.FromSeconds(Math.Max(duration - length, 0));
                 mediaPlayerElement.MediaPlayer.Play();
             }
-
-            //private async void SourceSelector_SelectionChanged(VideoChannel channel, object sender, SelectionChangedEventArgs e)
-            //{
-            //    var source = FindMediaSource(channel.sourceSelector.SelectedItem.ToString());
-            //    if (source != null)
-            //    {
-            //        channel.SetSource(source);
-            //    }
-            //    else
-            //    {
-            //        channel.ClearSource();
-            //    }
-            //}
 
             async void ClearSource()
             {
@@ -239,21 +248,6 @@ namespace FencingReplay
                 }
                 return "";
             }
-
-            //static async void PopulateSourceList(ListBox listBox)
-            //{
-            //    if (CurrentSources == null)
-            //    {
-            //        CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
-            //    }
-
-            //    listBox.Items.Clear();
-            //    foreach (var frameSource in CurrentSources)
-            //    {
-            //        listBox.Items.Add(frameSource.DisplayName);
-            //    }
-            //    listBox.Items.Add("--none--");
-            //}
         }
     }
 }

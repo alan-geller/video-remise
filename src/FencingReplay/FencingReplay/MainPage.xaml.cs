@@ -69,10 +69,21 @@ namespace FencingReplay
 
             config = (Application.Current as App).Config;
 
-            channels = new List<VideoChannel>();
-            foreach (var source in config.VideoSources)
+            if ((bool)e.Parameter)
             {
-                channels.Add(new VideoChannel(this) { VideoSource = source });
+                if (channels != null)
+                {
+                    foreach (var channel in channels)
+                    {
+                        await channel.ShutdownAsync();
+                    }
+                }
+                channels = new List<VideoChannel>();
+                int i = 0;
+                foreach (var source in config.VideoSources)
+                {
+                    channels.Add(new VideoChannel(i++, this) { VideoSource = source });
+                }
             }
 
             if (IsMatchSetUp)
