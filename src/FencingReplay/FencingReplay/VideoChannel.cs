@@ -44,12 +44,16 @@ namespace FencingReplay
                 get { return currentSource.DisplayName; }
                 set 
                 {
-                    var source = FindMediaSource(value);
-                    if (source != null)
+                    var flag = false;
+                    foreach (var frameSource in CurrentSources)
                     {
-                        SetSource(source);
+                        if (value == frameSource.DisplayName)
+                        {
+                            SetSource(frameSource);
+                            flag = true;
+                        }
                     }
-                    else
+                    if (!flag)
                     {
                         ClearSource();
                     }
@@ -184,6 +188,18 @@ namespace FencingReplay
 
             async void SetSource(MediaFrameSourceGroup sourceGroup)
             {
+                string GetVideoDeviceId(MediaFrameSourceGroup sg)
+                {
+                    foreach (var sourceInfo in sg.SourceInfos)
+                    {
+                        if (sourceInfo.MediaStreamType == MediaStreamType.VideoRecord)
+                        {
+                            return sourceInfo.DeviceInformation.Id;
+                        }
+                    }
+                    return "";
+                }
+
                 ClearSource();
 
                 currentSource = sourceGroup;
@@ -223,30 +239,6 @@ namespace FencingReplay
                     // We use the GetResults method to forcibly de-async; that is, to block.
                     CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
                 }
-            }
-
-            static MediaFrameSourceGroup FindMediaSource(string displayName)
-            {
-                foreach (var frameSource in CurrentSources)
-                {
-                    if (displayName == frameSource.DisplayName)
-                    {
-                        return frameSource;
-                    }
-                }
-                return null;
-            }
-
-            static string GetVideoDeviceId(MediaFrameSourceGroup sourceGroup)
-            {
-                foreach (var sourceInfo in sourceGroup.SourceInfos)
-                {
-                    if (sourceInfo.MediaStreamType == MediaStreamType.VideoRecord)
-                    {
-                        return sourceInfo.DeviceInformation.Id;
-                    }
-                }
-                return "";
             }
         }
     }

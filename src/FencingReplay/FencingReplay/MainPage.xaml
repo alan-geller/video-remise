@@ -21,18 +21,6 @@
                 <TextBlock Text="Stopped" FontSize="20" FontWeight="Bold" Margin="5,0,0,0"/>
             </CommandBar.Content>
         </CommandBar>
-        <!--<StackPanel Orientation="Horizontal">
-            <Button x:Name="StartBtn" Content="Start" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStartRecording"/>
-            <Button x:Name="StopBtn" Content="Stop" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" Click="OnStopRecording"/>
-            <Button x:Name="PauseBtn" Content="Pause" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
-                    Click="OnTogglePauseRecording" IsEnabled="False"/>
-            <Button x:Name="PlayBtn" Content="Play" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
-                    Click="OnPlay" IsEnabled="False"/>
-            <Button x:Name="TriggerBtn" Content="Trigger" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
-                    Click="OnTrigger" IsEnabled="False"/>
-            <Button x:Name="DeviceCfgBtn" Content="Device Setup" FontSize="20" ClickMode="Press" MinWidth="120" Margin="5,5,5,5" 
-                    Click="OnDeviceConfig" IsEnabled="True"/>
-        </StackPanel>-->
         <TextBlock x:Name="matchInfo" Text="Set up match" FontSize="20" FontWeight="Bold" Margin="5,10,0,10"/>
         <StackPanel x:Name="matchSetupPanel" Orientation="Horizontal" Margin="5,5,5,5" Visibility="Collapsed">
             <RadioButton x:Name="epeeBtn" FontSize="18" Content="Epee" Click="epeeBtn_Click"/>
@@ -44,7 +32,7 @@
             <TextBox x:Name="rightFencer" FontSize="18" PlaceholderText="Enter right fencer here" Width="400"
                         TextChanged="rightFencer_TextChanged"/>
         </StackPanel>
-        <Canvas x:Name="VideoCanvas">
+        <Canvas x:Name="VideoCanvas" Visibility="Visible">
             <StackPanel Orientation="Horizontal" Height="50" Canvas.Left="0" Canvas.Top="0"
                         Canvas.ZIndex="1">
                 <Rectangle x:Name="leftLight" Width="200" Fill="Red" Opacity="0"/>
@@ -61,5 +49,6 @@
                 </Grid.RowDefinitions>
             </Grid>
         </Canvas>
+        <MediaPlayerElement x:Name="Player" Visibility="Collapsed"/>
     </StackPanel>
 </Page>

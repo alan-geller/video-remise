@@ -7,6 +7,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Capture;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -41,8 +42,21 @@ namespace FencingReplay
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
+            if (!GraphicsCaptureSession.IsSupported())
+            {
+                var errorDialog = new ContentDialog() 
+                { 
+                    CloseButtonText = "OK", 
+                    Title="Screen capture required",
+                    Content="This application requires screen capture, which is not available on this system." +
+                    " You may need to update DirectX or your video driver."
+                };
+                _ = await errorDialog.ShowAsync();
+                throw new Exception("Screen capture is not available on this system");
+            }
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
