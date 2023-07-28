@@ -277,15 +277,24 @@ namespace FencingReplay
             Frame.Navigate(typeof(ConfigPage));
         }
 
-        private void OnSetupMatch(object sender, RoutedEventArgs e)
+        private async void OnSetupMatch(object sender, RoutedEventArgs e)
         {
-            if (matchSetupPanel.Visibility == Visibility.Visible)
+            var result = await MatchSetupDialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
             {
-                matchSetupPanel.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                matchSetupPanel.Visibility = Visibility.Visible;
+                if (epeeBtn.IsChecked ?? false)
+                {
+                    CurrentWeapon = FencingReplayConfig.Epee;
+                }
+                else if (foilBtn.IsChecked ?? false)
+                {
+                    CurrentWeapon = FencingReplayConfig.Foil;
+                }
+                else if (saberBtn.IsChecked ?? false)
+                {
+                    CurrentWeapon = FencingReplayConfig.Saber;
+                }
+                UpdateMatchInfo();
             }
         }
 
