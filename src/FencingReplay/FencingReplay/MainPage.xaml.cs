@@ -22,13 +22,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using YamlDotNet.Serialization;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace FencingReplay
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
         List<VideoChannel> channels;
@@ -39,7 +34,7 @@ namespace FencingReplay
         public bool Playing { get; set; }
 
         private FencingReplayConfig config;
-        private Visual VideoCanvasVisual;
+        private VideoGridManager gridManager;
 
         private bool IsMatchSetUp { 
             get
@@ -55,6 +50,8 @@ namespace FencingReplay
         public MainPage()
         {
             this.InitializeComponent();
+
+            gridManager = new VideoGridManager(this);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -71,36 +68,27 @@ namespace FencingReplay
 
             if ((bool)e.Parameter)
             {
-                if (channels != null)
-                {
-                    foreach (var channel in channels)
-                    {
-                        await channel.ShutdownAsync();
-                    }
-                }
-                channels = new List<VideoChannel>();
-                int i = 0;
-                foreach (var source in config.VideoSources)
-                {
-                    channels.Add(new VideoChannel(i++, this) { VideoSource = source });
-                }
+                //if (channels != null)
+                //{
+                //    foreach (var channel in channels)
+                //    {
+                //        await channel.ShutdownAsync();
+                //    }
+                //}
+                //channels = new List<VideoChannel>();
+                //int i = 0;
+                //foreach (var source in config.VideoSources)
+                //{
+                //    channels.Add(new VideoChannel(i++, this) { VideoSource = source });
+                //}
+                await gridManager.UpdateGridAsync();
             }
 
-            if (IsMatchSetUp)
-            {
-                matchSetupPanel.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                matchSetupPanel.Visibility = Visibility.Visible;
-            }
             UpdateMatchInfo();
 
             Paused = false;
             Recording = false;
             Playing = false;
-
-            VideoCanvasVisual = ElementCompositionPreview.GetElementVisual(VideoCanvas);
 
             SetStatus("Ready");
         }
@@ -112,28 +100,28 @@ namespace FencingReplay
             rightLight.Width = lightWidth;
             lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
 
-            LayoutGrid.Width = frameWidth;
-            if (LayoutGrid.ColumnDefinitions.Count > 0)
-            {
-                var videoWidth = Math.Max(frameWidth / LayoutGrid.ColumnDefinitions.Count, 150);
-                foreach (var col in LayoutGrid.ColumnDefinitions)
-                {
-                    col.Width = new GridLength(videoWidth);
-                }
-                foreach (var child in LayoutGrid.Children)
-                {
-                    var mc = child as CaptureElement;
-                    if (mc != null)
-                    {
-                        mc.Width = videoWidth;
-                    }
-                    var mp = child as MediaPlayerElement;
-                    if (mp != null)
-                    {
-                        mp.Width = videoWidth;
-                    }
-                }
-            }
+            //LayoutGrid.Width = frameWidth;
+            //if (LayoutGrid.ColumnDefinitions.Count > 0)
+            //{
+            //    var videoWidth = Math.Max(frameWidth / LayoutGrid.ColumnDefinitions.Count, 150);
+            //    foreach (var col in LayoutGrid.ColumnDefinitions)
+            //    {
+            //        col.Width = new GridLength(videoWidth);
+            //    }
+            //    foreach (var child in LayoutGrid.Children)
+            //    {
+            //        var mc = child as CaptureElement;
+            //        if (mc != null)
+            //        {
+            //            mc.Width = videoWidth;
+            //        }
+            //        var mp = child as MediaPlayerElement;
+            //        if (mp != null)
+            //        {
+            //            mp.Width = videoWidth;
+            //        }
+            //    }
+            //}
         }
 
         private void HandleResize(object sender, SizeChangedEventArgs e)
@@ -146,36 +134,18 @@ namespace FencingReplay
             Frame.SizeChanged -= HandleResize;
         }
 
-        private MediaFrameSourceGroup FindMediaSource(string displayName)
-        {
-            // We have to use the blocking GetResults to transition from asynch to synch
-            var frameSources = MediaFrameSourceGroup.FindAllAsync().GetResults();
-            foreach (var frameSource in frameSources)
-            {
-                if (displayName == frameSource.DisplayName)
-                {
-                    return frameSource;
-                }
-            }
-            return null;
-        }
-
-        private void SetVideoSource(CaptureElement captureElement, string displayName)
-        {
-
-        }
-
         private async void OnStartRecording(object sender, RoutedEventArgs e)
         {
             if (!Recording)
             {
-                //List<Task> done = new List<Task>();
-                foreach (var channel in channels)
-                {
-                    //done.Add(channel.StartRecording("test"));
-                    await channel.StartRecording("test");
-                }
-                //Task.WaitAll(done.ToArray());
+                ////List<Task> done = new List<Task>();
+                //foreach (var channel in channels)
+                //{
+                //    //done.Add(channel.StartRecording("test"));
+                //    await channel.StartRecording("test");
+                //}
+                ////Task.WaitAll(done.ToArray());
+                await gridManager.StartRecording();
 
                 leftLight.Opacity = 0.50;
                 rightLight.Opacity = 0.50;
@@ -192,13 +162,14 @@ namespace FencingReplay
         {
             if (Recording)
             {
-                //List<Task> done = new List<Task>();
-                foreach (var channel in channels)
-                {
-                    //done.Add(channel.StopRecording());
-                    await channel.StopRecording();
-                }
-                //Task.WaitAll(done.ToArray());
+                ////List<Task> done = new List<Task>();
+                //foreach (var channel in channels)
+                //{
+                //    //done.Add(channel.StopRecording());
+                //    await channel.StopRecording();
+                //}
+                ////Task.WaitAll(done.ToArray());
+                await gridManager.StopRecording();
 
                 PauseBtn.IsEnabled = false;
                 PlayBtn.IsEnabled = true;
@@ -239,15 +210,16 @@ namespace FencingReplay
             }
         }
 
-        private void OnPlay(object sender, RoutedEventArgs e)
+        private async void OnPlay(object sender, RoutedEventArgs e)
         {
             if (!Playing && !Recording)
             {
-                foreach (var channel in channels)
-                {
-                    channel.StartPlayback();
-                }
-                SetStatus("Playing");
+                //foreach (var channel in channels)
+                //{
+                //    channel.StartPlayback();
+                //}
+                //SetStatus("Playing");
+                gridManager.StartPlayback();
             }
         }
 
@@ -311,34 +283,6 @@ namespace FencingReplay
         {
             var content = CommandBar.Content as TextBlock;
             content.Text = status;
-        }
-
-        private void epeeBtn_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentWeapon = FencingReplayConfig.Epee;
-            UpdateMatchInfo();
-        }
-
-        private void foilBtn_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentWeapon = FencingReplayConfig.Foil;
-            UpdateMatchInfo();
-        }
-
-        private void saberBtn_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentWeapon = FencingReplayConfig.Saber;
-            UpdateMatchInfo();
-        }
-
-        private void leftFencer_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            UpdateMatchInfo();
-        }
-
-        private void rightFencer_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            UpdateMatchInfo();
         }
     }
 }
