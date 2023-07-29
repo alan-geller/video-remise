@@ -38,6 +38,7 @@ namespace FencingReplay
         bool isRecording = false;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
+        public CaptureElement CaptureElement => captureElement;
 
         public string VideoSource
         {

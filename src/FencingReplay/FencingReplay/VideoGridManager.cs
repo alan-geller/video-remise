@@ -81,19 +81,18 @@ namespace FencingReplay
                 if (zoomed && (n != column))
                 {
                     channels[n].PlayerElement.Visibility = Visibility.Collapsed;
+                    channels[n].CaptureElement.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
                     channels[n].PlayerElement.Visibility = Visibility.Visible;
+                    channels[n].CaptureElement.Visibility = Visibility.Visible;
                 }
             }
 
-            if (zoomed)
+            foreach (var sp in splitters)
             {
-                foreach (var sp in splitters)
-                {
-                    sp.Visibility = Visibility.Collapsed;
-                }
+                sp.Visibility = zoomed ? Visibility.Collapsed : Visibility.Visible;
             }
         }
 
