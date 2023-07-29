@@ -36,9 +36,37 @@ namespace FencingReplay
 
         bool isPreviewing = false;
         bool isRecording = false;
+        bool showingLive = true;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
+
+        public Visibility Visibility 
+        {
+            get
+            {
+                if ((mediaPlayerElement.Visibility == Visibility.Collapsed) &&
+                    (captureElement.Visibility == Visibility.Collapsed))
+                {
+                    return Visibility.Collapsed;
+                }
+                else
+                {
+                    return Visibility.Visible;
+                }
+            } 
+            set 
+            { 
+                if (showingLive)
+                {
+                    captureElement.Visibility = value;
+                }
+                else
+                {
+                    mediaPlayerElement.Visibility = value;
+                }
+            } 
+        }
 
         public string VideoSource
         {
@@ -152,6 +180,7 @@ namespace FencingReplay
         {
             captureElement.Visibility = Visibility.Collapsed;
             mediaPlayerElement.Visibility = Visibility.Visible;
+            showingLive = false;
             mediaPlayerElement.Source = MediaSource.CreateFromStream(currentRecordingStream, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto).ToString());
             mediaPlayerElement.MediaPlayer.Play();
         }
@@ -164,6 +193,7 @@ namespace FencingReplay
             }
             captureElement.Visibility = Visibility.Collapsed;
             mediaPlayerElement.Visibility = Visibility.Visible;
+            showingLive = false;
             activeSource = MediaSource.CreateFromStream(currentRecordingStream, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto).ToString());
             mediaPlayerElement.Source = activeSource;
             var duration = activeSource.Duration?.TotalSeconds ?? 0;
