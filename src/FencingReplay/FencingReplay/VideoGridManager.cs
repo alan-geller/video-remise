@@ -18,7 +18,7 @@ namespace FencingReplay
         private FencingReplayConfig config;
         private Grid grid;
         private List<VideoChannel> channels;
-        private List<GridSplitter> splitters;
+        //private List<GridSplitter> splitters;
         private bool zoomed = false;
 
         internal VideoGridManager(MainPage mp)
@@ -27,7 +27,7 @@ namespace FencingReplay
             grid = mp.LayoutGrid;
 
             channels = new List<VideoChannel>();
-            splitters = new List<GridSplitter>();
+            //splitters = new List<GridSplitter>();
         }
 
         internal async Task UpdateGridAsync()
@@ -40,39 +40,39 @@ namespace FencingReplay
                 grid.Children.Remove(channel.PlayerElement);
             }
             channels.Clear();
-            foreach (var splitter in splitters)
-            {
-                grid.Children.Remove(splitter);
-            }
-            splitters.Clear();
+            //foreach (var splitter in splitters)
+            //{
+            //    grid.Children.Remove(splitter);
+            //}
+            //splitters.Clear();
             int i = 0;
             foreach (var source in config.VideoSources)
             {
                 channels.Add(new VideoChannel(i++, mainPage, this) { VideoSource = source });
             }
 
-            for (int n = 0; n < channels.Count - 1; n++)
-            {
-                var splitter = new GridSplitter();
-                splitter.ResizeDirection = GridSplitter.GridResizeDirection.Auto;
-                splitter.ResizeBehavior = GridSplitter.GridResizeBehavior.BasedOnAlignment;
-                splitter.CursorBehavior = GridSplitter.SplitterCursorBehavior.ChangeOnSplitterHover;
-                splitter.Width = 10;
-                splitter.GripperCursor = GridSplitter.GripperCursorType.Hand;
-                splitter.Foreground = new SolidColorBrush(Colors.White);
-                splitter.Background = new SolidColorBrush(Colors.Gray);
-                splitter.HorizontalAlignment = HorizontalAlignment.Right;
-                var content = new TextBlock();
-                content.Text = "\uE76F";
-                content.HorizontalAlignment = HorizontalAlignment.Center;
-                content.VerticalAlignment = VerticalAlignment.Center;
-                splitter.Element = content;
+            //for (int n = 0; n < channels.Count - 1; n++)
+            //{
+            //    var splitter = new GridSplitter();
+            //    splitter.ResizeDirection = GridSplitter.GridResizeDirection.Auto;
+            //    splitter.ResizeBehavior = GridSplitter.GridResizeBehavior.BasedOnAlignment;
+            //    splitter.CursorBehavior = GridSplitter.SplitterCursorBehavior.ChangeOnSplitterHover;
+            //    splitter.Width = 10;
+            //    splitter.GripperCursor = GridSplitter.GripperCursorType.Hand;
+            //    splitter.Foreground = new SolidColorBrush(Colors.White);
+            //    splitter.Background = new SolidColorBrush(Colors.Gray);
+            //    splitter.HorizontalAlignment = HorizontalAlignment.Right;
+            //    var content = new TextBlock();
+            //    content.Text = "\uE76F";
+            //    content.HorizontalAlignment = HorizontalAlignment.Center;
+            //    content.VerticalAlignment = VerticalAlignment.Center;
+            //    splitter.Element = content;
 
-                grid.Children.Add(splitter);
-                Grid.SetColumn(splitter, n);
-                Grid.SetRow(splitter, 0);
-                splitters.Add(splitter);
-            }
+            //    grid.Children.Add(splitter);
+            //    Grid.SetColumn(splitter, n);
+            //    Grid.SetRow(splitter, 0);
+            //    splitters.Add(splitter);
+            //}
         }
 
         internal void ToggleZoom(int column)
@@ -90,10 +90,10 @@ namespace FencingReplay
                 }
             }
 
-            foreach (var sp in splitters)
-            {
-                sp.Visibility = zoomed ? Visibility.Collapsed : Visibility.Visible;
-            }
+            //foreach (var sp in splitters)
+            //{
+            //    sp.Visibility = zoomed ? Visibility.Collapsed : Visibility.Visible;
+            //}
         }
 
         internal async Task StartRecording(string fileName)
