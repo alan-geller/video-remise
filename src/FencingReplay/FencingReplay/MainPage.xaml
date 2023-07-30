@@ -10,11 +10,11 @@
     <StackPanel Orientation="Vertical">
         <CommandBar x:Name="CommandBar">
             <AppBarButton Icon="People" Label="Match Setup" Click="OnSetupMatch"/>
-            <AppBarButton x:Name="StartBtn" Icon="Camera" Label="Start" Click="OnStartRecording"/>
-            <AppBarButton x:Name="StopBtn" Icon="Stop" Label="Stop" Click="OnStopRecording"/>
+            <AppBarButton x:Name="StartBtn" Icon="Camera" Label="Start Match" Click="OnStartMatch"/>
+            <AppBarButton x:Name="StopBtn" Icon="Stop" Label="Stop Recording" Click="OnStopRecording"/>
             <AppBarButton x:Name="PlayBtn" Icon="Play" Label="Play" Click="OnPlay"/>
             <AppBarButton x:Name="TriggerBtn" Icon="Flag" Label="Trigger" Click="OnTrigger"/>
-            <AppBarButton x:Name="PauseBtn" Icon="Pause" Label="Pause" Click="OnTogglePauseRecording"/>
+            <!--<AppBarButton x:Name="PauseBtn" Icon="Pause" Label="Pause" Click="OnTogglePauseRecording"/>-->
             <AppBarButton x:Name="DeviceCfgBtn" Icon="Setting" Label="Settings" Click="OnDeviceConfig"/>
             <CommandBar.Content>
                 <TextBlock Text="Stopped" FontSize="20" FontWeight="Bold" Margin="5,0,0,0"/>

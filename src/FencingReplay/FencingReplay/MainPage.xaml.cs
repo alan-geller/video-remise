@@ -24,14 +24,21 @@ using YamlDotNet.Serialization;
 
 namespace FencingReplay
 {
+    public enum Mode
+    {
+        Idle,
+        Recording,
+        Replaying
+    }
+
     public sealed partial class MainPage : Page
     {
         List<VideoChannel> channels;
 
         public int CurrentWeapon { get; set; }
-        public bool Paused { get; set; }
-        public bool Recording { get; set; }
+        public Mode CurrentMode { get; set; }
         public bool Playing { get; set; }
+
 
         private FencingReplayConfig config;
         private VideoGridManager gridManager;
@@ -62,8 +69,6 @@ namespace FencingReplay
 
             await VideoChannel.Initialize();
 
-            AdjustVideoWidths(Frame.ActualWidth);
-
             config = (Application.Current as App).Config;
 
             if ((bool)e.Parameter)
@@ -86,11 +91,12 @@ namespace FencingReplay
 
             UpdateMatchInfo();
 
-            Paused = false;
-            Recording = false;
-            Playing = false;
+            AdjustVideoWidths(Frame.ActualWidth);
 
-            SetStatus("Ready");
+            Playing = false;
+            CurrentMode = Mode.Idle;
+
+            SetStatus();
         }
 
         private void AdjustVideoWidths(double frameWidth)
@@ -134,9 +140,9 @@ namespace FencingReplay
             Frame.SizeChanged -= HandleResize;
         }
 
-        private async void OnStartRecording(object sender, RoutedEventArgs e)
+        private async void OnStartMatch(object sender, RoutedEventArgs e)
         {
-            if (!Recording)
+            if (CurrentMode == Mode.Idle)
             {
                 ////List<Task> done = new List<Task>();
                 //foreach (var channel in channels)
@@ -145,22 +151,26 @@ namespace FencingReplay
                 //    await channel.StartRecording("test");
                 //}
                 ////Task.WaitAll(done.ToArray());
-                await gridManager.StartRecording();
+
+                var fileName = IsMatchSetUp ?
+                    $"{leftFencer.Text}-{rightFencer.Text}" :
+                    $"No match";
+                await gridManager.StartRecording(fileName);
 
                 leftLight.Opacity = 0.50;
                 rightLight.Opacity = 0.50;
 
-                PauseBtn.IsEnabled = true;
+                //PauseBtn.IsEnabled = true;
                 PlayBtn.IsEnabled = true;
                 TriggerBtn.IsEnabled = true;
-                Recording = true;
-                SetStatus("Recording");
+                CurrentMode = Mode.Recording;
+                SetStatus();
             }
         }
 
         private async void OnStopRecording(object sender, RoutedEventArgs e)
         {
-            if (Recording)
+            if (CurrentMode != Mode.Idle)
             {
                 ////List<Task> done = new List<Task>();
                 //foreach (var channel in channels)
@@ -171,48 +181,48 @@ namespace FencingReplay
                 ////Task.WaitAll(done.ToArray());
                 await gridManager.StopRecording();
 
-                PauseBtn.IsEnabled = false;
+                //PauseBtn.IsEnabled = false;
                 PlayBtn.IsEnabled = true;
                 TriggerBtn.IsEnabled = false;
-                Recording = false;
-                SetStatus("Ready");
+                CurrentMode = Mode.Idle;
+                SetStatus();
             }
         }
 
-        private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
-        {
-            if (Recording)
-            {
-                if (!Paused)
-                {
-                    List<Task> done = new List<Task>();
-                    foreach (var channel in channels)
-                    {
-                        done.Add(channel.Pause());
-                    }
-                    Task.WaitAll(done.ToArray());
-                    PauseBtn.Content = "Resume";
-                    Paused = true;
-                    SetStatus("Paused");
-                }
-                else
-                {
-                    List<Task> done = new List<Task>();
-                    foreach (var channel in channels)
-                    {
-                        done.Add(channel.Resume());
-                    }
-                    Task.WaitAll(done.ToArray());
-                    PauseBtn.Content = "Pause";
-                    Paused = false;
-                    SetStatus("Recording");
-                }
-            }
-        }
+        //private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
+        //{
+        //    if (Recording)
+        //    {
+        //        if (!Paused)
+        //        {
+        //            List<Task> done = new List<Task>();
+        //            foreach (var channel in channels)
+        //            {
+        //                done.Add(channel.Pause());
+        //            }
+        //            Task.WaitAll(done.ToArray());
+        //            PauseBtn.Content = "Resume";
+        //            Paused = true;
+        //            SetStatus("Paused");
+        //        }
+        //        else
+        //        {
+        //            List<Task> done = new List<Task>();
+        //            foreach (var channel in channels)
+        //            {
+        //                done.Add(channel.Resume());
+        //            }
+        //            Task.WaitAll(done.ToArray());
+        //            PauseBtn.Content = "Pause";
+        //            Paused = false;
+        //            SetStatus("Recording");
+        //        }
+        //    }
+        //}
 
         private async void OnPlay(object sender, RoutedEventArgs e)
         {
-            if (!Playing && !Recording)
+            if (CurrentMode == Mode.Idle)
             {
                 //foreach (var channel in channels)
                 //{
@@ -225,22 +235,23 @@ namespace FencingReplay
 
         private async void OnTrigger(object sender, RoutedEventArgs e)
         {
-            if (Recording)
+            if (CurrentMode != Mode.Idle)
             {
                 if (config.ReplaySecondsAfterTrigger[CurrentWeapon] > 0)
                 {
                     await Task.Delay(1000 * config.ReplaySecondsAfterTrigger[CurrentWeapon]);
-                    foreach (var channel in channels)
-                    {
-                        await channel.StopRecording();
-                    }
-                    foreach (var channel in channels)
-                    {
-                        channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
-                            config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
-                        SetStatus("Replaying");
-                    }
+                    //foreach (var channel in channels)
+                    //{
+                    //    await channel.StopRecording();
+                    //}
                 }
+                foreach (var channel in channels)
+                {
+                    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
+                        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
+                }
+                CurrentMode = Mode.Replaying;
+                SetStatus();
             }
         }
 
@@ -279,10 +290,21 @@ namespace FencingReplay
                 "Set up match";
         }
 
-        private void SetStatus(string status)
+        private void SetStatus()
         {
             var content = CommandBar.Content as TextBlock;
-            content.Text = status;
+            switch (CurrentMode)
+            {
+                case Mode.Idle:
+                    content.Text = "Idle";
+                    break;
+                case Mode.Replaying:
+                    content.Text = "Replaying";
+                    break;
+                case Mode.Recording:
+                    content.Text = "Recording";
+                    break;
+            }
         }
     }
 }

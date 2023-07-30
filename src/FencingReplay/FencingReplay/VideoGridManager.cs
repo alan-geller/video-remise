@@ -54,8 +54,8 @@ namespace FencingReplay
             for (int n = 0; n < channels.Count - 1; n++)
             {
                 var splitter = new GridSplitter();
-                splitter.ResizeDirection = GridSplitter.GridResizeDirection.Columns;
-                splitter.ResizeBehavior = GridSplitter.GridResizeBehavior.CurrentAndNext;
+                splitter.ResizeDirection = GridSplitter.GridResizeDirection.Auto;
+                splitter.ResizeBehavior = GridSplitter.GridResizeBehavior.BasedOnAlignment;
                 splitter.CursorBehavior = GridSplitter.SplitterCursorBehavior.ChangeOnSplitterHover;
                 splitter.Width = 10;
                 splitter.GripperCursor = GridSplitter.GripperCursorType.Hand;
@@ -63,7 +63,9 @@ namespace FencingReplay
                 splitter.Background = new SolidColorBrush(Colors.Gray);
                 splitter.HorizontalAlignment = HorizontalAlignment.Right;
                 var content = new TextBlock();
-                content.Text = "";
+                content.Text = "\uE76F";
+                content.HorizontalAlignment = HorizontalAlignment.Center;
+                content.VerticalAlignment = VerticalAlignment.Center;
                 splitter.Element = content;
 
                 grid.Children.Add(splitter);
@@ -94,13 +96,13 @@ namespace FencingReplay
             }
         }
 
-        internal async Task StartRecording()
+        internal async Task StartRecording(string fileName)
         {
             //List<Task> done = new List<Task>();
             foreach (var channel in channels)
             {
                 //done.Add(channel.StartRecording("test"));
-                await channel.StartRecording("test");
+                await channel.StartRecording(fileName);
             }
             //Task.WaitAll(done.ToArray());
         }

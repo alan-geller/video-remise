@@ -9,6 +9,7 @@ using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
 using Windows.Media.MediaProperties;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Display;
 using Windows.UI.Core;
@@ -22,6 +23,8 @@ namespace FencingReplay
 {
     internal class VideoChannel : IDisposable
     {
+        const string SaveSubfolderName = "Fencing Matches";
+
         MainPage mainPage;
         int gridColumn;
         CaptureElement captureElement;
@@ -99,10 +102,12 @@ namespace FencingReplay
 
             while (mainPage.LayoutGrid.ColumnDefinitions.Count <= gridColumn)
             {
-                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() 
+                    { Width = new GridLength(1.0, GridUnitType.Star) });
             }
 
             captureElement = new CaptureElement();
+            captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
             mainPage.LayoutGrid.Children.Add(captureElement);
             Grid.SetColumn(captureElement, gridColumn);
             Grid.SetRow(captureElement, 0);
@@ -160,11 +165,14 @@ namespace FencingReplay
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
         {
-            currentRecordingStream = new InMemoryRandomAccessStream();
-            //var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
-            //StorageFile file = await myVideos.SaveFolder.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", CreationCollisionOption.GenerateUniqueName);
-            //mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
-            mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
+            //currentRecordingStream = new InMemoryRandomAccessStream();
+            var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
+            var fencingVideos = await myVideos.SaveFolder.CreateFolderAsync(SaveSubfolderName,
+                CreationCollisionOption.OpenIfExists);
+            var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", 
+                CreationCollisionOption.GenerateUniqueName);
+            mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
+            //mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
             isRecording = true;
             return mediaRecording.StartAsync();
         }
@@ -259,7 +267,6 @@ namespace FencingReplay
                     captureElement.Source = currentCapture;
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
-                    mainPage.Paused = true;
                 });
 
             }
