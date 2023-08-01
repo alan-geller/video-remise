@@ -1,11 +1,6 @@
-﻿using Microsoft.Toolkit.Uwp.UI.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel.Channels;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -18,7 +13,6 @@ namespace VideoRemise
         private VideoRemiseConfig config;
         private Grid grid;
         private List<VideoChannel> channels;
-        //private List<GridSplitter> splitters;
         private bool zoomed = false;
 
         public int ChannelCount => channels.Count;
@@ -42,11 +36,7 @@ namespace VideoRemise
                 grid.Children.Remove(channel.PlayerElement);
             }
             channels.Clear();
-            //foreach (var splitter in splitters)
-            //{
-            //    grid.Children.Remove(splitter);
-            //}
-            //splitters.Clear();
+
             int i = 0;
             double totalWidth = 0.0;
             foreach (var source in config.VideoSources)
@@ -70,29 +60,6 @@ namespace VideoRemise
                     channel.RelativeWidth = channel.AspectRatio / totalWidth;
                 }
             }
-
-            //for (int n = 0; n < channels.Count - 1; n++)
-            //{
-            //    var splitter = new GridSplitter();
-            //    splitter.ResizeDirection = GridSplitter.GridResizeDirection.Auto;
-            //    splitter.ResizeBehavior = GridSplitter.GridResizeBehavior.BasedOnAlignment;
-            //    splitter.CursorBehavior = GridSplitter.SplitterCursorBehavior.ChangeOnSplitterHover;
-            //    splitter.Width = 10;
-            //    splitter.GripperCursor = GridSplitter.GripperCursorType.Hand;
-            //    splitter.Foreground = new SolidColorBrush(Colors.White);
-            //    splitter.Background = new SolidColorBrush(Colors.Gray);
-            //    splitter.HorizontalAlignment = HorizontalAlignment.Right;
-            //    var content = new TextBlock();
-            //    content.Text = "\uE76F";
-            //    content.HorizontalAlignment = HorizontalAlignment.Center;
-            //    content.VerticalAlignment = VerticalAlignment.Center;
-            //    splitter.Element = content;
-
-            //    grid.Children.Add(splitter);
-            //    Grid.SetColumn(splitter, n);
-            //    Grid.SetRow(splitter, 0);
-            //    splitters.Add(splitter);
-            //}
         }
 
         internal void AdjustWIdths(double frameWidth)

@@ -1,26 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation.Collections;
-using Windows.Media.Capture;
-using Windows.Media.Capture.Frames;
-using Windows.Media.Playback;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Hosting;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using YamlDotNet.Serialization;
 
 namespace VideoRemise
 {
@@ -33,8 +15,6 @@ namespace VideoRemise
 
     public sealed partial class MainPage : Page
     {
-        List<VideoChannel> channels;
-
         public int CurrentWeapon { get; set; }
         public Mode CurrentMode { get; set; }
         public bool Playing { get; set; }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Media.MediaProperties;
 
 // From https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/set-media-encoding-properties
