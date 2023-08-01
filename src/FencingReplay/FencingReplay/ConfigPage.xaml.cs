@@ -17,14 +17,14 @@ using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace FencingReplay
+namespace VideoRemise
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class ConfigPage : Page
     {
-        private FencingReplayConfig config;
+        private VideoRemiseConfig config;
 
         public ConfigPage()
         {
@@ -91,12 +91,12 @@ namespace FencingReplay
                     break;
             }
 
-            epeePre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Epee].ToString();
-            epeePost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Epee].ToString();
-            foilPre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Foil].ToString();
-            foilPost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Foil].ToString();
-            saberPre.Text = config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Saber].ToString();
-            saberPost.Text = config.ReplaySecondsAfterTrigger[FencingReplayConfig.Saber].ToString();
+            epeePre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Epee].ToString();
+            epeePost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Epee].ToString();
+            foilPre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Foil].ToString();
+            foilPost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Foil].ToString();
+            saberPre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Saber].ToString();
+            saberPost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Saber].ToString();
         }
 
         private void OnCameraCount1(object sender, RoutedEventArgs e)
@@ -224,17 +224,17 @@ namespace FencingReplay
             }
             config.VideoSources = newSources;
 
-            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Epee] = 
+            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Epee] = 
                 int.Parse(SameOrDefault(epeePre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Epee] = 
+            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Epee] = 
                 int.Parse(SameOrDefault(epeePost.Text, "0"));
-            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Foil] = 
+            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Foil] = 
                 int.Parse(SameOrDefault(foilPre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Foil] = 
+            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Foil] = 
                 int.Parse(SameOrDefault(foilPost.Text, "0"));
-            config.ReplaySecondsBeforeTrigger[FencingReplayConfig.Saber] = 
+            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Saber] = 
                 int.Parse(SameOrDefault(saberPre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[FencingReplayConfig.Saber] = 
+            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Saber] = 
                 int.Parse(SameOrDefault(saberPost.Text, "0"));
 
             config.Save();

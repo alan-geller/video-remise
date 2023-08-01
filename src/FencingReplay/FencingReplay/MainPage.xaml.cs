@@ -22,7 +22,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using YamlDotNet.Serialization;
 
-namespace FencingReplay
+namespace VideoRemise
 {
     public enum Mode
     {
@@ -40,7 +40,7 @@ namespace FencingReplay
         public bool Playing { get; set; }
 
 
-        private FencingReplayConfig config;
+        private VideoRemiseConfig config;
         private VideoGridManager gridManager;
 
         private bool IsMatchSetUp { 
@@ -267,15 +267,15 @@ namespace FencingReplay
             {
                 if (epeeBtn.IsChecked ?? false)
                 {
-                    CurrentWeapon = FencingReplayConfig.Epee;
+                    CurrentWeapon = VideoRemiseConfig.Epee;
                 }
                 else if (foilBtn.IsChecked ?? false)
                 {
-                    CurrentWeapon = FencingReplayConfig.Foil;
+                    CurrentWeapon = VideoRemiseConfig.Foil;
                 }
                 else if (saberBtn.IsChecked ?? false)
                 {
-                    CurrentWeapon = FencingReplayConfig.Saber;
+                    CurrentWeapon = VideoRemiseConfig.Saber;
                 }
                 UpdateMatchInfo();
             }
@@ -283,8 +283,8 @@ namespace FencingReplay
 
         private void UpdateMatchInfo()
         {
-            var weapon = char.ToUpper(FencingReplayConfig.WeaponName(CurrentWeapon)[0]).ToString()
-                + FencingReplayConfig.WeaponName(CurrentWeapon).Substring(1);
+            var weapon = char.ToUpper(VideoRemiseConfig.WeaponName(CurrentWeapon)[0]).ToString()
+                + VideoRemiseConfig.WeaponName(CurrentWeapon).Substring(1);
             matchInfo.Text = IsMatchSetUp ?
                 $"{weapon}: {leftFencer.Text} vs. {rightFencer.Text}" :
                 "Set up match";

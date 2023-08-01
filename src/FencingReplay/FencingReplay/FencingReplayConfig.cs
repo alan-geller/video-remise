@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Documents;
 using Windows.Storage;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace FencingReplay
+namespace VideoRemise
 {
-    internal class FencingReplayConfig
+    internal class VideoRemiseConfig
     {
         public const int Epee = 0;
         public const int Foil = 1;
@@ -69,9 +69,9 @@ namespace FencingReplay
             File.WriteAllText(filePath, serializer.Serialize(this));
         }
 
-        public static FencingReplayConfig Load()
+        public static VideoRemiseConfig Load()
         {
-            var config = new FencingReplayConfig();
+            var config = new VideoRemiseConfig();
             var appSettings = ApplicationData.Current.LocalSettings;
 
             try
@@ -115,23 +115,23 @@ namespace FencingReplay
             return config;
         }
 
-        public static FencingReplayConfig FromFile(string filePath)
+        public static VideoRemiseConfig FromFile(string filePath)
         {
             var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
 
             try
             {
-                return deserializer.Deserialize<FencingReplayConfig>(File.ReadAllText(filePath));
+                return deserializer.Deserialize<VideoRemiseConfig>(File.ReadAllText(filePath));
             }
             catch (Exception)
             {
-                var config =  new FencingReplayConfig();
+                var config =  new VideoRemiseConfig();
                 config.ToFile(filePath);
                 return config;
             }
         }
 
-        public static FencingReplayConfig FromFile()
+        public static VideoRemiseConfig FromFile()
         {
             var filePath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "config.yaml");
 

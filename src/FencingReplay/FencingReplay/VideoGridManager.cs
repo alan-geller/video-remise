@@ -10,12 +10,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
-namespace FencingReplay
+namespace VideoRemise
 {
     internal class VideoGridManager
     {
         private MainPage mainPage;
-        private FencingReplayConfig config;
+        private VideoRemiseConfig config;
         private Grid grid;
         private List<VideoChannel> channels;
         //private List<GridSplitter> splitters;
@@ -48,7 +48,7 @@ namespace FencingReplay
             int i = 0;
             foreach (var source in config.VideoSources)
             {
-                channels.Add(new VideoChannel(i++, mainPage, this) { VideoSource = source });
+                channels.Add(new VideoChannel(i++, mainPage, source, this));
             }
 
             //for (int n = 0; n < channels.Count - 1; n++)

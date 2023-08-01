@@ -16,10 +16,11 @@ using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using YamlDotNet.Core.Tokens;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace FencingReplay
+namespace VideoRemise
 {
     internal class VideoChannel : IDisposable
     {
@@ -43,6 +44,10 @@ namespace FencingReplay
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
+        //public string VideoSource => currentSource.DisplayName;
+
+
+        public double AspectRatio { get; set; } = 0.0;
 
         public Visibility Visibility 
         {
@@ -71,31 +76,10 @@ namespace FencingReplay
             } 
         }
 
-        public string VideoSource
-        {
-            get { return currentSource.DisplayName; }
-            set
-            {
-                var flag = false;
-                foreach (var frameSource in CurrentSources)
-                {
-                    if (value == frameSource.DisplayName)
-                    {
-                        SetSource(frameSource);
-                        flag = true;
-                    }
-                }
-                if (!flag)
-                {
-                    ClearSource();
-                }
-            }
-        }
-
         static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
         private bool disposedValue;
 
-        internal VideoChannel(int col, MainPage page, VideoGridManager mgr)
+        internal VideoChannel(int col, MainPage page, string sourceName, VideoGridManager mgr)
         {
             mainPage = page;
             gridColumn = col;
@@ -104,6 +88,15 @@ namespace FencingReplay
             {
                 mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() 
                     { Width = new GridLength(1.0, GridUnitType.Star) });
+            }
+
+            foreach (var frameSource in CurrentSources)
+            {
+                if (sourceName == frameSource.DisplayName)
+                {
+                    SetSource(frameSource);
+                    break;
+                }
             }
 
             captureElement = new CaptureElement();
@@ -258,13 +251,19 @@ namespace FencingReplay
             try
             {
                 currentCapture = new MediaCapture();
-                var settings = new MediaCaptureInitializationSettings { VideoDeviceId = GetVideoDeviceId(currentSource) };
+                var settings = new MediaCaptureInitializationSettings 
+                { 
+                    VideoDeviceId = GetVideoDeviceId(currentSource),
+                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    StreamingCaptureMode = StreamingCaptureMode.Video
+                };
                 await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     await currentCapture.InitializeAsync(settings);
                     currentRequest.RequestActive();
                     DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
                     captureElement.Source = currentCapture;
+                    
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
                 });
