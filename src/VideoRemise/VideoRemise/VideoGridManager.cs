@@ -41,12 +41,13 @@ namespace VideoRemise
             double totalWidth = 0.0;
             foreach (var source in config.VideoSources)
             {
-                var channel = new VideoChannel(i++, mainPage, source, this);
+                var channel = new VideoChannel(i++, mainPage, this);
+                await channel.SetSource(source);
                 channels.Add(channel);
                 totalWidth += channel.AspectRatio;
             }
 
-            if (double.IsNaN(totalWidth))
+            if (double.IsNaN(totalWidth) || (totalWidth == 0.0))
             {
                 foreach (var channel in channels)
                 {
@@ -62,7 +63,7 @@ namespace VideoRemise
             }
         }
 
-        internal void AdjustWIdths(double frameWidth)
+        internal void AdjustWidths(double frameWidth)
         {
             mainPage.LayoutGrid.Width = frameWidth;
 

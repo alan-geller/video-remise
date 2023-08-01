@@ -46,7 +46,8 @@ namespace VideoRemise
         //public string VideoSource => currentSource.DisplayName;
 
 
-        public double AspectRatio { get; set; } = double.NaN;
+        public double AspectRatio { get; set; }
+
         public double RelativeWidth 
         { 
             get { return relativeWidth; } 
@@ -103,7 +104,7 @@ namespace VideoRemise
         static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
         private bool disposedValue;
 
-        internal VideoChannel(int col, MainPage page, string sourceName, VideoGridManager mgr)
+        internal VideoChannel(int col, MainPage page, VideoGridManager mgr)
         {
             mainPage = page;
             gridColumn = col;
@@ -112,15 +113,6 @@ namespace VideoRemise
             {
                 mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() 
                     { Width = new GridLength(1.0, GridUnitType.Star) });
-            }
-
-            foreach (var frameSource in CurrentSources)
-            {
-                if (sourceName == frameSource.DisplayName)
-                {
-                    SetSource(frameSource);
-                    break;
-                }
             }
 
             captureElement = new CaptureElement();
@@ -254,8 +246,20 @@ namespace VideoRemise
             }
         }
 
-        internal async void SetSource(MediaFrameSourceGroup sourceGroup)
+        internal async Task SetSource(string name)
         {
+            MediaFrameSourceGroup FindSource(string sourceName)
+            {
+                foreach (var frameSource in CurrentSources)
+                {
+                    if (sourceName == frameSource.DisplayName)
+                    {
+                        return frameSource;
+                    }
+                }
+                return null;
+            }
+
             string GetVideoDeviceId(MediaFrameSourceGroup sg)
             {
                 foreach (var sourceInfo in sg.SourceInfos)
@@ -270,40 +274,58 @@ namespace VideoRemise
 
             ClearSource();
 
-            currentSource = sourceGroup;
-
-            try
+            currentSource = FindSource(name);
+            if (currentSource != null)
             {
-                currentCapture = new MediaCapture();
-                var settings = new MediaCaptureInitializationSettings 
-                { 
-                    VideoDeviceId = GetVideoDeviceId(currentSource),
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
-                    StreamingCaptureMode = StreamingCaptureMode.Video
-                };
-                await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                try
                 {
+                    currentCapture = new MediaCapture();
+                    var settings = new MediaCaptureInitializationSettings
+                    {
+                        VideoDeviceId = GetVideoDeviceId(currentSource),
+                        MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                        StreamingCaptureMode = StreamingCaptureMode.Video
+                    };
+                    // TODO: The following winds up with things finishing after the Task is completed; too many layers
+                    // of async. This messes up future computations that rely on AspectRation being set.
+                    // There's probably a way to wait for this cleanly, probably by creating an explicit task that this code
+                    // awaits and that gets completed by the inner lambda here. 
+                    // The problem with just running these calls inline is that they have to run on the UI thread, so now
+                    // this routine has to get called from the UI thread, and if anything takes a long time to finish, the
+                    // app will be unresponsive.
+                    
+                    //await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    //{
+                    //    await currentCapture.InitializeAsync(settings);
+                    //    var props = new StreamPropertiesHelper(currentCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoRecord));
+                    //    AspectRatio = props.AspectRatio;
+                    //    currentRequest.RequestActive();
+                    //    DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
+                    //    captureElement.Source = currentCapture;
+
+                    //    await currentCapture.StartPreviewAsync();
+                    //    isPreviewing = true;
+                    //});
                     await currentCapture.InitializeAsync(settings);
                     var props = new StreamPropertiesHelper(currentCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoRecord));
                     AspectRatio = props.AspectRatio;
                     currentRequest.RequestActive();
                     DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
                     captureElement.Source = currentCapture;
-                    
+
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
-                });
-
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // This will be thrown if the user denied access to the camera in privacy settings
-                await (new MessageDialog("The app was denied access to the camera")).ShowAsync();
-                return;
-            }
-            catch (System.IO.FileLoadException)
-            {
-                //currentCapture.CaptureDeviceExclusiveControlStatusChanged += _mediaCapture_CaptureDeviceExclusiveControlStatusChanged;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // This will be thrown if the user denied access to the camera in privacy settings
+                    await (new MessageDialog("The app was denied access to the camera")).ShowAsync();
+                    return;
+                }
+                catch (System.IO.FileLoadException)
+                {
+                    //currentCapture.CaptureDeviceExclusiveControlStatusChanged += _mediaCapture_CaptureDeviceExclusiveControlStatusChanged;
+                }
             }
         }
 

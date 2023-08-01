@@ -86,7 +86,7 @@ namespace VideoRemise
             rightLight.Width = lightWidth;
             lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
 
-            gridManager.AdjustWIdths(frameWidth);
+            gridManager.AdjustWidths(frameWidth);
         }
 
         private void HandleResize(object sender, SizeChangedEventArgs e)
