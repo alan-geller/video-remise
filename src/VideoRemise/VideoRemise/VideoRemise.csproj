@@ -7,8 +7,8 @@
     <ProjectGuid>{0EB49CB4-D9AD-47D7-B67E-27C4BFCCF899}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FencingReplay</RootNamespace>
-    <AssemblyName>FencingReplay</AssemblyName>
+    <RootNamespace>VideoRemise</RootNamespace>
+    <AssemblyName>VideoRemise</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22000.0</TargetPlatformVersion>
