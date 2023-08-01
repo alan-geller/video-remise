@@ -37,6 +37,7 @@ namespace VideoRemise
         InMemoryRandomAccessStream currentRecordingStream;
         MediaSource activeSource;
         VideoGridManager manager;
+        double relativeWidth;
 
         bool isPreviewing = false;
         bool isRecording = false;
@@ -44,10 +45,20 @@ namespace VideoRemise
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
+        public int GridColumn => gridColumn;
         //public string VideoSource => currentSource.DisplayName;
 
 
-        public double AspectRatio { get; set; } = 0.0;
+        public double AspectRatio { get; set; } = double.NaN;
+        public double RelativeWidth 
+        { 
+            get { return relativeWidth; } 
+            set 
+            {
+                relativeWidth = value;
+                mainPage.LayoutGrid.ColumnDefinitions[gridColumn].Width = new GridLength(relativeWidth, GridUnitType.Star);
+            } 
+        }
 
         public Visibility Visibility 
         {
@@ -74,6 +85,22 @@ namespace VideoRemise
                     mediaPlayerElement.Visibility = value;
                 }
             } 
+        }
+
+        public string ChannelName
+        {
+            get
+            {
+                switch (gridColumn)
+                {
+                    case 0:
+                        return manager.ChannelCount == 1 ? "center" : "left";
+                    case 1:
+                        return manager.ChannelCount == 2 ? "right" : "center";
+                    default:
+                        return "right";
+                }
+            }
         }
 
         static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
@@ -162,7 +189,7 @@ namespace VideoRemise
             var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
             var fencingVideos = await myVideos.SaveFolder.CreateFolderAsync(SaveSubfolderName,
                 CreationCollisionOption.OpenIfExists);
-            var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{gridColumn}.mp4", 
+            var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{ChannelName}.mp4", 
                 CreationCollisionOption.GenerateUniqueName);
             mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
             //mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
@@ -260,6 +287,8 @@ namespace VideoRemise
                 await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     await currentCapture.InitializeAsync(settings);
+                    var props = new StreamPropertiesHelper(currentCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoRecord));
+                    AspectRatio = props.AspectRatio;
                     currentRequest.RequestActive();
                     DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
                     captureElement.Source = currentCapture;

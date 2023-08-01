@@ -21,6 +21,8 @@ namespace VideoRemise
         //private List<GridSplitter> splitters;
         private bool zoomed = false;
 
+        public int ChannelCount => channels.Count;
+
         internal VideoGridManager(MainPage mp)
         {
             mainPage = mp;
@@ -46,9 +48,27 @@ namespace VideoRemise
             //}
             //splitters.Clear();
             int i = 0;
+            double totalWidth = 0.0;
             foreach (var source in config.VideoSources)
             {
-                channels.Add(new VideoChannel(i++, mainPage, source, this));
+                var channel = new VideoChannel(i++, mainPage, source, this);
+                channels.Add(channel);
+                totalWidth += channel.AspectRatio;
+            }
+
+            if (double.IsNaN(totalWidth))
+            {
+                foreach (var channel in channels)
+                {
+                    channel.RelativeWidth = 1.0 / channels.Count;
+                }
+            }
+            else
+            {
+                foreach (var channel in channels)
+                {
+                    channel.RelativeWidth = channel.AspectRatio / totalWidth;
+                }
             }
 
             //for (int n = 0; n < channels.Count - 1; n++)
@@ -73,6 +93,20 @@ namespace VideoRemise
             //    Grid.SetRow(splitter, 0);
             //    splitters.Add(splitter);
             //}
+        }
+
+        internal void AdjustWIdths(double frameWidth)
+        {
+            mainPage.LayoutGrid.Width = frameWidth;
+
+            foreach (var channel in channels)
+            {
+                var videoWidth = frameWidth * channel.RelativeWidth;
+
+                mainPage.LayoutGrid.ColumnDefinitions[channel.GridColumn].Width = new GridLength(videoWidth);
+                channel.CaptureElement.Width = videoWidth;
+                channel.PlayerElement.Width = videoWidth;
+            }
         }
 
         internal void ToggleZoom(int column)

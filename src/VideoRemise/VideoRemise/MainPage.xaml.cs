@@ -106,28 +106,7 @@ namespace VideoRemise
             rightLight.Width = lightWidth;
             lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
 
-            //LayoutGrid.Width = frameWidth;
-            //if (LayoutGrid.ColumnDefinitions.Count > 0)
-            //{
-            //    var videoWidth = Math.Max(frameWidth / LayoutGrid.ColumnDefinitions.Count, 150);
-            //    foreach (var col in LayoutGrid.ColumnDefinitions)
-            //    {
-            //        col.Width = new GridLength(videoWidth);
-            //    }
-            //    foreach (var child in LayoutGrid.Children)
-            //    {
-            //        var mc = child as CaptureElement;
-            //        if (mc != null)
-            //        {
-            //            mc.Width = videoWidth;
-            //        }
-            //        var mp = child as MediaPlayerElement;
-            //        if (mp != null)
-            //        {
-            //            mp.Width = videoWidth;
-            //        }
-            //    }
-            //}
+            gridManager.AdjustWIdths(frameWidth);
         }
 
         private void HandleResize(object sender, SizeChangedEventArgs e)
