@@ -204,11 +204,11 @@ namespace VideoRemise
                     //    await channel.StopRecording();
                     //}
                 }
-                foreach (var channel in channels)
-                {
-                    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
-                        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
-                }
+                //foreach (var channel in channels)
+                //{
+                //    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
+                //        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
+                //}
                 CurrentMode = Mode.Replaying;
                 SetStatus();
             }
