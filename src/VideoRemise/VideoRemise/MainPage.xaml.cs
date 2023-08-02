@@ -196,9 +196,9 @@ namespace VideoRemise
         {
             if (CurrentMode != Mode.Idle)
             {
-                if (config.ReplaySecondsAfterTrigger[CurrentWeapon] > 0)
+                if (config.ReplayMillisAfterTrigger[CurrentWeapon] > 0)
                 {
-                    await Task.Delay(1000 * config.ReplaySecondsAfterTrigger[CurrentWeapon]);
+                    await Task.Delay(config.ReplayMillisAfterTrigger[CurrentWeapon]);
                     //foreach (var channel in channels)
                     //{
                     //    await channel.StopRecording();

@@ -21,7 +21,7 @@ namespace VideoRemise
 {
     internal class VideoChannel : IDisposable
     {
-        const string SaveSubfolderName = "Fencing Matches";
+        public const string SaveSubfolderName = "Fencing Matches";
 
         MainPage mainPage;
         int gridColumn;

@@ -18,8 +18,9 @@ namespace VideoRemise
         public string TriggerProtocol { get; set; } = "";
         public bool ManualTriggerEnabled { get; set; } = true;
 
-        public int[] ReplaySecondsBeforeTrigger { get; } = { 6, 6, 6 };
-        public int[] ReplaySecondsAfterTrigger { get; } = { 2, 2, 2 };
+        public int[] ReplayMillisBeforeTrigger { get; } = { 6000, 6000, 6000 };
+        public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
+        public int ActionContinuationMillis { get; set; } = 1500;
 
         public bool IsReadyToGo
         {
@@ -28,6 +29,11 @@ namespace VideoRemise
                 return (VideoSources.Count > 0) &&
                     (TriggerProtocol != "" || ManualTriggerEnabled);
             }
+        }
+
+        public VideoRemiseConfig()
+        {
+
         }
 
         public void Save()
@@ -52,8 +58,8 @@ namespace VideoRemise
                 ApplicationDataCreateDisposition.Always);
             for (i = 0; i < 3; i++)
             {
-                timingSettings.Values[$"PreTrigger{i}"] = ReplaySecondsBeforeTrigger[i];
-                timingSettings.Values[$"PostTrigger{i}"] = ReplaySecondsAfterTrigger[i];
+                timingSettings.Values[$"PreTrigger{i}"] = ReplayMillisBeforeTrigger[i];
+                timingSettings.Values[$"PostTrigger{i}"] = ReplayMillisAfterTrigger[i];
             }
         }
 
@@ -98,8 +104,8 @@ namespace VideoRemise
                     ApplicationDataCreateDisposition.Existing);
                 for (int i = 0; i < 3; i++)
                 {
-                    config.ReplaySecondsBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
-                    config.ReplaySecondsAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
+                    config.ReplayMillisBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
+                    config.ReplayMillisAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
                 }
             }
             catch (Exception)

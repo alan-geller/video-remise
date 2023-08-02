@@ -122,6 +122,8 @@
     <Compile Include="ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Match.cs" />
+    <Compile Include="TriggerEvent.cs" />
     <Compile Include="VideoRemiseConfig.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>

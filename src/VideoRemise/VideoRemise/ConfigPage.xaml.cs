@@ -82,12 +82,12 @@ namespace VideoRemise
                     break;
             }
 
-            epeePre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Epee].ToString();
-            epeePost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Epee].ToString();
-            foilPre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Foil].ToString();
-            foilPost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Foil].ToString();
-            saberPre.Text = config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Saber].ToString();
-            saberPost.Text = config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Saber].ToString();
+            epeePre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee].ToString();
+            epeePost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee].ToString();
+            foilPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil].ToString();
+            foilPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil].ToString();
+            saberPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber].ToString();
+            saberPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber].ToString();
         }
 
         private void OnCameraCount1(object sender, RoutedEventArgs e)
@@ -215,17 +215,17 @@ namespace VideoRemise
             }
             config.VideoSources = newSources;
 
-            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Epee] = 
+            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee] = 
                 int.Parse(SameOrDefault(epeePre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Epee] = 
+            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee] = 
                 int.Parse(SameOrDefault(epeePost.Text, "0"));
-            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Foil] = 
+            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil] = 
                 int.Parse(SameOrDefault(foilPre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Foil] = 
+            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil] = 
                 int.Parse(SameOrDefault(foilPost.Text, "0"));
-            config.ReplaySecondsBeforeTrigger[VideoRemiseConfig.Saber] = 
+            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber] = 
                 int.Parse(SameOrDefault(saberPre.Text, "0"));
-            config.ReplaySecondsAfterTrigger[VideoRemiseConfig.Saber] = 
+            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber] = 
                 int.Parse(SameOrDefault(saberPost.Text, "0"));
 
             config.Save();

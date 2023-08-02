@@ -39,7 +39,7 @@
             </ComboBox>
             <CheckBox x:Name="audioToggle" Margin="5,30,0,10" FontSize="28">Audio feed?</CheckBox>
             <TextBlock Text="Timing and Replay Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,0"/>
-            <TextBlock Text="All times in seconds" FontSize="28" Margin="5,0,0,10"/>
+            <TextBlock Text="All times in milliseconds" FontSize="28" Margin="5,0,0,10"/>
             <Grid Margin="5,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
