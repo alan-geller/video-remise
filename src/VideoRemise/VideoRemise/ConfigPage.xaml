@@ -8,90 +8,94 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel Margin="5,5,5,5" Width="900">
-        <TextBlock Text="Device Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,10"/>
-        <ComboBox x:Name="triggerCombo" Width="890" FontSize="28" Header="Scoring machine (trigger) type:" 
+    <ScrollViewer Height="Auto" Width="Auto" 
+                  HorizontalScrollBarVisibility="Auto" 
+                  VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="5,5,5,5" Width="900">
+            <TextBlock Text="Device Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,10"/>
+            <ComboBox x:Name="triggerCombo" Width="890" FontSize="28" Header="Scoring machine (trigger) type:" 
                   PlaceholderText="Pick a scoring machine..." Margin="5,10,0,10">
-            <x:String>Swiss Timing (SG, Absolute, Favero FA-07</x:String>
-            <x:String>Favero FA-05</x:String>
-        </ComboBox>
-        <CheckBox x:Name="manualTrigger" Margin="5,10,0,10" FontSize="28">Enable manual trigger</CheckBox>
-        <TextBlock Margin="5,30,0,10" FontSize="28">Video feed count:</TextBlock>
-        <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
-            <RadioButton x:Name="videoCount1Btn" Content="1" FontSize="28" Click="OnCameraCount1"/>
-            <RadioButton x:Name="videoCount2Btn" Content="2" FontSize="28" Click="OnCameraCount2" />
-            <RadioButton x:Name="videoCount3Btn" Content="3" FontSize="28" Click="OnCameraCount3" />
-        </StackPanel>
-        <ComboBox x:Name="videoFeedLeft" Width="890" FontSize="28" Header="Left Camera:" 
+                <x:String>Swiss Timing (SG, Absolute, Favero FA-07</x:String>
+                <x:String>Favero FA-05</x:String>
+            </ComboBox>
+            <CheckBox x:Name="manualTrigger" Margin="5,10,0,10" FontSize="28">Enable manual trigger</CheckBox>
+            <TextBlock Margin="5,30,0,10" FontSize="28">Video feed count:</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
+                <RadioButton x:Name="videoCount1Btn" Content="1" FontSize="28" Click="OnCameraCount1"/>
+                <RadioButton x:Name="videoCount2Btn" Content="2" FontSize="28" Click="OnCameraCount2" />
+                <RadioButton x:Name="videoCount3Btn" Content="3" FontSize="28" Click="OnCameraCount3" />
+            </StackPanel>
+            <ComboBox x:Name="videoFeedLeft" Width="890" FontSize="28" Header="Left Camera:" 
                   PlaceholderText="Pick a camera" Margin="5,0,0,0" IsEnabled="False">
-            <x:String>dummy</x:String>
-        </ComboBox>
-        <ComboBox x:Name="videoFeedCenter" Width="890" FontSize="28" Header="Center Camera:" 
+                <x:String>dummy</x:String>
+            </ComboBox>
+            <ComboBox x:Name="videoFeedCenter" Width="890" FontSize="28" Header="Center Camera:" 
                   PlaceholderText="Pick a camera" Margin="5,0,0,0">
-            <x:String>dummy</x:String>
-        </ComboBox>
-        <ComboBox x:Name="videoFeedRight" Width="890" FontSize="28" Header="Right Camera:" 
+                <x:String>dummy</x:String>
+            </ComboBox>
+            <ComboBox x:Name="videoFeedRight" Width="890" FontSize="28" Header="Right Camera:" 
                   PlaceholderText="Pick a camera" Margin="5,0,0,0" IsEnabled="False">
-            <x:String>dummy</x:String>
-        </ComboBox>
-        <CheckBox x:Name="audioToggle" Margin="5,30,0,10" FontSize="28">Audio feed?</CheckBox>
-        <TextBlock Text="Timing and Replay Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,0"/>
-        <TextBlock Text="All times in seconds" FontSize="28" Margin="5,0,0,10"/>
-        <Grid Margin="5,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="0">
-                <TextBlock Text="Epee" FontSize="28"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="0">
-                <TextBlock Text="Foil" FontSize="28"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="0">
-                <TextBlock Text="Saber" FontSize="28"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="0" Grid.Column="1" >
-                <TextBlock Text="Pre-Trigger" FontSize="28" HorizontalAlignment="Center"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="0" Grid.Column="2">
-                <TextBlock Text="Post-Trigger" FontSize="28" HorizontalAlignment="Center"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="1">
-                <TextBox x:Name="epeePre" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                <x:String>dummy</x:String>
+            </ComboBox>
+            <CheckBox x:Name="audioToggle" Margin="5,30,0,10" FontSize="28">Audio feed?</CheckBox>
+            <TextBlock Text="Timing and Replay Configuration" FontSize="36" FontWeight="Bold" Margin="5,10,0,0"/>
+            <TextBlock Text="All times in seconds" FontSize="28" Margin="5,0,0,10"/>
+            <Grid Margin="5,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="0">
+                    <TextBlock Text="Epee" FontSize="28"/>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="0">
+                    <TextBlock Text="Foil" FontSize="28"/>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="0">
+                    <TextBlock Text="Saber" FontSize="28"/>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="0" Grid.Column="1" >
+                    <TextBlock Text="Pre-Trigger" FontSize="28" HorizontalAlignment="Center"/>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="0" Grid.Column="2">
+                    <TextBlock Text="Post-Trigger" FontSize="28" HorizontalAlignment="Center"/>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="1">
+                    <TextBox x:Name="epeePre" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="2">
-                <TextBox x:Name="epeePost" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="2">
+                    <TextBox x:Name="epeePost" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="1">
-                <TextBox x:Name="foilPre" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="1">
+                    <TextBox x:Name="foilPre" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="2">
-                <TextBox x:Name="foilPost" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="2">
+                    <TextBox x:Name="foilPost" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="1">
-                <TextBox x:Name="saberPre" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="1">
+                    <TextBox x:Name="saberPre" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-            <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="2">
-                <TextBox x:Name="saberPost" Text="0" FontSize="24" HorizontalAlignment="Center" 
+                </Border>
+                <Border BorderThickness="1" BorderBrush="Black" Grid.Row="3" Grid.Column="2">
+                    <TextBox x:Name="saberPost" Text="0" FontSize="24" HorizontalAlignment="Center" 
                              TextAlignment="Right" BorderBrush="Gray" BeforeTextChanging="VerifyDigitEntry"/>
-            </Border>
-        </Grid>
-        <StackPanel Orientation="Horizontal" Margin="5,75,0,0" Spacing="20" HorizontalAlignment="Right">
-            <Button x:Name="okBtn" Content="OK" FontSize="28" Width="250" Click="OnSave"/>
-            <Button x:Name="cancelBtn" Content="Cancel" FontSize="28" Width="250" Click="OnCancel"/>
+                </Border>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="5,75,0,0" Spacing="20" HorizontalAlignment="Right">
+                <Button x:Name="okBtn" Content="OK" FontSize="28" Width="250" Click="OnSave"/>
+                <Button x:Name="cancelBtn" Content="Cancel" FontSize="28" Width="250" Click="OnCancel"/>
+            </StackPanel>
         </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 </Page>
