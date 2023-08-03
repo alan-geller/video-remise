@@ -5,6 +5,9 @@ using Windows.Media.Capture.Frames;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using Windows.Devices.Enumeration;
+using Windows.Devices.Usb;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -16,6 +19,7 @@ namespace VideoRemise
     public sealed partial class ConfigPage : Page
     {
         private VideoRemiseConfig config;
+        private Dictionary<string, DeviceInformation> devices;
 
         public ConfigPage()
         {
@@ -27,10 +31,16 @@ namespace VideoRemise
             base.OnNavigatedTo(e);
             config = (Application.Current as App).Config;
 
-            // Populate from the current confiuration
-            if (config.TriggerProtocol != "")
+            adapterHostClass.Text = config.UsbAdapterHostClass.ToString();
+            await PopulateAdapterList();
+            if (!string.IsNullOrWhiteSpace(config.UsbAdapterName))
             {
-                triggerCombo.SelectedItem = config.TriggerProtocol;
+                triggerAdapter.SelectedItem = config.UsbAdapterName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(config.TriggerProtocol))
+            {
+                triggerProtocol.SelectedItem = config.TriggerProtocol;
             }
 
             manualTrigger.IsChecked = config.ManualTriggerEnabled;
@@ -88,6 +98,28 @@ namespace VideoRemise
             foilPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil].ToString();
             saberPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber].ToString();
             saberPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber].ToString();
+        }
+
+        private async Task PopulateAdapterList()
+        {
+            byte deviceClass = string.IsNullOrWhiteSpace(adapterHostClass.Text)
+                ? (byte)0 : byte.Parse(adapterHostClass.Text);
+
+            var myDevices = await DeviceInformation.FindAllAsync(
+                UsbDevice.GetDeviceClassSelector(
+                    new UsbDeviceClass() { ClassCode = deviceClass }));
+
+            triggerAdapter.Items.Clear();
+            foreach (var device in myDevices)
+            {
+                triggerAdapter.Items.Add(device.Name);
+                devices[device.Name] = device;
+            }
+        }
+
+        private async void OnAdapterClassChange(object sender, TextChangedEventArgs e)
+        {
+            await PopulateAdapterList();
         }
 
         private void OnCameraCount1(object sender, RoutedEventArgs e)
@@ -180,8 +212,11 @@ namespace VideoRemise
             // Populate the config object
             var config = (Application.Current as App).Config;
 
+            config.UsbAdapterHostClass = string.IsNullOrWhiteSpace(adapterHostClass.Text)
+                ? (byte)0 : byte.Parse(adapterHostClass.Text);
+            config.UsbAdapterName = triggerAdapter.SelectedItem?.ToString() ?? "";
             config.ManualTriggerEnabled = manualTrigger.IsChecked ?? true;
-            config.TriggerProtocol = triggerCombo.SelectedItem?.ToString() ?? "";
+            config.TriggerProtocol = triggerProtocol.SelectedItem?.ToString() ?? "";
             config.AudioSource = null;
 
             var newSources = new List<string>();

@@ -89,7 +89,7 @@ namespace VideoRemise
             }
         }
 
-        public async void Save()
+        public async Task Save()
         {
             var fileName = IsMatchSetUp ? $"{LeftFencer}-{RightFencer}" : "No match";
 

@@ -6,7 +6,8 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
-  IgnorableNamespaces="uap mp uap3 uap6">
+  xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
+  IgnorableNamespaces="uap mp uap3 uap6 iot">
 
   <Identity
     Name="FencingReplay"
@@ -52,8 +53,15 @@
     <uap:Capability Name="musicLibrary"/>
     <uap:Capability Name="picturesLibrary"/>
     <uap3:Capability Name="backgroundMediaPlayback"/>
+    <iot:Capability Name="lowLevelDevices"/>
     <DeviceCapability Name="microphone"/>
     <DeviceCapability Name="webcam"/>
-    <DeviceCapability Name="lowLevel"/>
+    <DeviceCapability Name="usb">
+      <Device Id="any">
+        <Function Type="name:cdcControl"/>
+        <Function Type="name:physical"/>
+        <Function Type="name:vendorSpecific"/>
+      </Device>
+    </DeviceCapability>
   </Capabilities>
 </Package>

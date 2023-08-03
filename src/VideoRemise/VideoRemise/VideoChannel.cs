@@ -202,7 +202,7 @@ namespace VideoRemise
             mediaPlayerElement.MediaPlayer.Play();
         }
 
-        internal async void StartLoop(int length)
+        internal async Task StartLoop(int length)
         {
             if (isRecording)
             {
@@ -218,7 +218,7 @@ namespace VideoRemise
             mediaPlayerElement.MediaPlayer.Play();
         }
 
-        internal async void ClearSource()
+        internal async Task ClearSource()
         {
             if (currentCapture != null)
             {
