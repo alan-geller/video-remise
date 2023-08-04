@@ -13,8 +13,6 @@
                   VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="5,5,5,5" Width="900">
             <TextBlock Text="Scoring Machine Configuration" FontSize="18" FontWeight="Bold" Margin="5,10,0,0"/>
-            <TextBox x:Name="adapterHostClass" Header="USB Adapter Host Class (decimal):" BeforeTextChanging="VerifyDigitEntry"
-                     TextChanged="OnAdapterClassChange"/>
             <ComboBox x:Name="triggerAdapter" Width="890" FontSize="14" Header="Scoring machine adapter:" 
                   PlaceholderText="Pick the scoring machine adapter..." Margin="5,0,0,0"/>
             <ComboBox x:Name="triggerProtocol" Width="890" FontSize="14" Header="Scoring machine protocol:" 

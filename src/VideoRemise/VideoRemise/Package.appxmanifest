@@ -53,14 +53,11 @@
     <uap:Capability Name="musicLibrary"/>
     <uap:Capability Name="picturesLibrary"/>
     <uap3:Capability Name="backgroundMediaPlayback"/>
-    <iot:Capability Name="lowLevelDevices"/>
     <DeviceCapability Name="microphone"/>
     <DeviceCapability Name="webcam"/>
-    <DeviceCapability Name="usb">
+    <DeviceCapability Name="serialcommunication">
       <Device Id="any">
-        <Function Type="name:cdcControl"/>
-        <Function Type="name:physical"/>
-        <Function Type="name:vendorSpecific"/>
+        <Function Type="name:serialPort"/>
       </Device>
     </DeviceCapability>
   </Capabilities>

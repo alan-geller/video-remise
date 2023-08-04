@@ -7,14 +7,21 @@ using System.Threading.Tasks;
 
 namespace VideoRemise
 {
+    // These specific values match the Favero FA01 outputs, which makes that specific
+    // driver slightly simpler, but it really doesn't matter.
+    internal enum Lights
+    {
+        LeftWhite = 1,
+        RightWhite = 2,
+        Red = 4,            // Red is left on-target
+        Green = 8
+    }
+
     internal abstract class Trigger
     {
-        public struct LightEventArgs
+        public class LightEventArgs : EventArgs
         {
-            bool Red;
-            bool LeftWhite;
-            bool Green;
-            bool RightWhite;
+            public int LightsOn { get; set; }   // A sum of values from the Lights enum
         }
 
         public bool FiresClockEvents { get; set; }
@@ -39,11 +46,12 @@ namespace VideoRemise
                 temp(this, new EventArgs());
             }
         }
-        protected void FireLightEvent(LightEventArgs args)
+        protected void FireLightEvent(int lights)
         {
             var temp = OnLight;
             if (temp != null)
             {
+                var args = new LightEventArgs() { LightsOn = lights };
                 temp(this, args);
             }
         }

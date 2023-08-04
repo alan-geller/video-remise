@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Usb;
 using System.Threading.Tasks;
+using Windows.Devices.SerialCommunication;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -31,7 +32,6 @@ namespace VideoRemise
             base.OnNavigatedTo(e);
             config = (Application.Current as App).Config;
 
-            adapterHostClass.Text = config.UsbAdapterHostClass.ToString();
             await PopulateAdapterList();
 
             if (!string.IsNullOrWhiteSpace(config.TriggerProtocol))
@@ -98,28 +98,19 @@ namespace VideoRemise
 
         private async Task PopulateAdapterList()
         {
-            byte deviceClass = string.IsNullOrWhiteSpace(adapterHostClass.Text)
-                ? (byte)0 : byte.Parse(adapterHostClass.Text);
-
-            var myDevices = await DeviceInformation.FindAllAsync(
-                UsbDevice.GetDeviceClassSelector(
-                    new UsbDeviceClass() { ClassCode = deviceClass }));
+            var myDevices = 
+                await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
 
             triggerAdapter.Items.Clear();
             foreach (var device in myDevices)
             {
                 triggerAdapter.Items.Add(device.Name);
                 devices[device.Name] = device;
-                if (device.Id == config.UsbAdapterDeviceId)
+                if (device.Id == config.AdapterDeviceId)
                 {
                     triggerAdapter.SelectedItem = device.Name;
                 }
             }
-        }
-
-        private async void OnAdapterClassChange(object sender, TextChangedEventArgs e)
-        {
-            await PopulateAdapterList();
         }
 
         private void OnCameraCount1(object sender, RoutedEventArgs e)
@@ -212,9 +203,14 @@ namespace VideoRemise
             // Populate the config object
             var config = (Application.Current as App).Config;
 
-            config.UsbAdapterHostClass = string.IsNullOrWhiteSpace(adapterHostClass.Text)
-                ? (byte)0 : byte.Parse(adapterHostClass.Text);
-            config.UsbAdapterDeviceId = triggerAdapter.SelectedItem?.ToString() ?? "";
+            if (triggerAdapter.SelectedItem != null)
+            {
+                config.AdapterDeviceId = devices[triggerAdapter.SelectedItem.ToString()].Id;
+            }
+            else
+            {
+                config.AdapterDeviceId = "";
+            }
             config.ManualTriggerEnabled = manualTrigger.IsChecked ?? true;
             config.TriggerProtocol = triggerProtocol.SelectedItem?.ToString() ?? "";
             config.AudioSource = null;
