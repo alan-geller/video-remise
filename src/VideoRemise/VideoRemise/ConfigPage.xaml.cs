@@ -33,10 +33,6 @@ namespace VideoRemise
 
             adapterHostClass.Text = config.UsbAdapterHostClass.ToString();
             await PopulateAdapterList();
-            if (!string.IsNullOrWhiteSpace(config.UsbAdapterName))
-            {
-                triggerAdapter.SelectedItem = config.UsbAdapterName;
-            }
 
             if (!string.IsNullOrWhiteSpace(config.TriggerProtocol))
             {
@@ -114,6 +110,10 @@ namespace VideoRemise
             {
                 triggerAdapter.Items.Add(device.Name);
                 devices[device.Name] = device;
+                if (device.Id == config.UsbAdapterDeviceId)
+                {
+                    triggerAdapter.SelectedItem = device.Name;
+                }
             }
         }
 
@@ -214,7 +214,7 @@ namespace VideoRemise
 
             config.UsbAdapterHostClass = string.IsNullOrWhiteSpace(adapterHostClass.Text)
                 ? (byte)0 : byte.Parse(adapterHostClass.Text);
-            config.UsbAdapterName = triggerAdapter.SelectedItem?.ToString() ?? "";
+            config.UsbAdapterDeviceId = triggerAdapter.SelectedItem?.ToString() ?? "";
             config.ManualTriggerEnabled = manualTrigger.IsChecked ?? true;
             config.TriggerProtocol = triggerProtocol.SelectedItem?.ToString() ?? "";
             config.AudioSource = null;

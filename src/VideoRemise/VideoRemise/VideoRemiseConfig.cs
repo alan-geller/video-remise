@@ -16,7 +16,7 @@ namespace VideoRemise
         public string AudioSource { get; set; } = null;
 
         public byte UsbAdapterHostClass { get; set; } = 2;
-        public string UsbAdapterName { get; set; }
+        public string UsbAdapterDeviceId { get; set; }
         public string TriggerProtocol { get; set; } = "";
         public bool ManualTriggerEnabled { get; set; } = true;
 
