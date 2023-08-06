@@ -24,12 +24,14 @@ namespace VideoRemise
 
         public ConfigPage()
         {
+            devices = new Dictionary<string, DeviceInformation>();
             this.InitializeComponent();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
             config = (Application.Current as App).Config;
 
             await PopulateAdapterList();

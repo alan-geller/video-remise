@@ -45,27 +45,26 @@ namespace VideoRemise
         {
             base.OnNavigatedTo(e);
 
-            Frame.SizeChanged += HandleResize;
+            config = (Application.Current as App).Config;
+
+            if (!string.IsNullOrWhiteSpace(config.AdapterDeviceId))
+            {
+                await Trigger.Start(config);
+            }
 
             await VideoChannel.Initialize();
 
-            config = (Application.Current as App).Config;
+            //gridManager.AddTrigger(Trigger.ActiveTrigger);
+            //if (config.ManualTriggerEnabled)
+            //{
+            //    var manualTrigger = SetUpManualTrigger();
+            //    gridManager.AddTrigger(manualTrigger);
+            //}
+
+            Frame.SizeChanged += HandleResize;
 
             if ((bool)e.Parameter)
             {
-                //if (channels != null)
-                //{
-                //    foreach (var channel in channels)
-                //    {
-                //        await channel.ShutdownAsync();
-                //    }
-                //}
-                //channels = new List<VideoChannel>();
-                //int i = 0;
-                //foreach (var source in config.VideoSources)
-                //{
-                //    channels.Add(new VideoChannel(i++, this) { VideoSource = source });
-                //}
                 await gridManager.UpdateGridAsync();
             }
 
@@ -77,6 +76,11 @@ namespace VideoRemise
             CurrentMode = Mode.Idle;
 
             SetStatus();
+        }
+
+        private Trigger SetUpManualTrigger()
+        {
+            throw new NotImplementedException();
         }
 
         private void AdjustVideoWidths(double frameWidth)

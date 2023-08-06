@@ -272,7 +272,7 @@ namespace VideoRemise
                 return "";
             }
 
-            ClearSource();
+            await ClearSource();
 
             currentSource = FindSource(name);
             if (currentSource != null)

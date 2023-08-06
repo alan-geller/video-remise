@@ -21,7 +21,7 @@ namespace VideoRemise
     {
         public class LightEventArgs : EventArgs
         {
-            public int LightsOn { get; set; }   // A sum of values from the Lights enum
+            public Lights LightsOn { get; set; }   // A sum of values from the Lights enum
         }
 
         public bool FiresClockEvents { get; set; }
@@ -29,6 +29,22 @@ namespace VideoRemise
         public event EventHandler OnClockStart;
         public event EventHandler OnClockStop;
         public event EventHandler<LightEventArgs> OnLight;
+
+        public static Trigger ActiveTrigger;
+
+        public static async Task Start(VideoRemiseConfig config)
+        {
+            if (config.TriggerProtocol == "Favero FA01")
+            {
+                ActiveTrigger = new FaveroFA01Trigger();
+            }
+            if (ActiveTrigger != null) // Implies manual triggering
+            {
+                await ActiveTrigger.Initialize(config);
+            }
+        }
+
+        public abstract Task Initialize(VideoRemiseConfig config);
 
         protected void FireClockStartEvent()
         {
@@ -46,7 +62,7 @@ namespace VideoRemise
                 temp(this, new EventArgs());
             }
         }
-        protected void FireLightEvent(int lights)
+        protected void FireLightEvent(Lights lights)
         {
             var temp = OnLight;
             if (temp != null)

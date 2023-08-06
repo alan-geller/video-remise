@@ -127,5 +127,10 @@ namespace VideoRemise
                 channel.StartPlayback();
             }
         }
+
+        internal void AddTrigger(Trigger activeTrigger)
+        {
+            //throw new NotImplementedException();
+        }
     }
 }

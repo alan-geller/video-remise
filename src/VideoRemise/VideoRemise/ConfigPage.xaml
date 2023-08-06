@@ -17,8 +17,9 @@
                   PlaceholderText="Pick the scoring machine adapter..." Margin="5,0,0,0"/>
             <ComboBox x:Name="triggerProtocol" Width="890" FontSize="14" Header="Scoring machine protocol:" 
                   PlaceholderText="Pick a scoring machine protocol..." Margin="5,0,0,0">
-                <x:String>Swiss Timing (SG, Absolute, Favero FA-07</x:String>
-                <x:String>Favero FA-05</x:String>
+                <!--<x:String>Swiss Timing (SG, Absolute, Favero FA-07</x:String>
+                <x:String>Favero FA-05</x:String>-->
+                <x:String>Favero FA01</x:String>
             </ComboBox>
             <CheckBox x:Name="manualTrigger" Margin="5,0,0,0" FontSize="14">Enable manual trigger</CheckBox>
             <TextBlock Text="Camera Configuration" FontSize="18" FontWeight="Bold" Margin="5,10,0,0"/>

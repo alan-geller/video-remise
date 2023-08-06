@@ -16,21 +16,17 @@ namespace VideoRemise
         public string AudioSource { get; set; } = null;
 
         public string AdapterDeviceId { get; set; }
-        public string TriggerProtocol { get; set; } = "";
+        public string TriggerProtocol { get; set; }
         public bool ManualTriggerEnabled { get; set; } = true;
 
         public int[] ReplayMillisBeforeTrigger { get; } = { 6000, 6000, 6000 };
         public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
         public int ActionContinuationMillis { get; set; } = 1500;
 
-        public bool IsReadyToGo
-        {
-            get
-            {
-                return (VideoSources.Count > 0) &&
-                    (TriggerProtocol != "" || ManualTriggerEnabled);
-            }
-        }
+        public bool IsReadyToGo => (VideoSources.Count > 0) &&
+                    ((!string.IsNullOrWhiteSpace(AdapterDeviceId) 
+                            && !string.IsNullOrWhiteSpace(TriggerProtocol)) 
+                        || ManualTriggerEnabled);
 
         public VideoRemiseConfig()
         {
