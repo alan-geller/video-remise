@@ -9,7 +9,7 @@ namespace VideoRemise
 {
     // These specific values match the Favero FA01 outputs, which makes that specific
     // driver slightly simpler, but it really doesn't matter.
-    internal enum Lights
+    public enum Lights
     {
         LeftWhite = 1,
         RightWhite = 2,

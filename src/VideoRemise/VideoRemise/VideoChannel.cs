@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
+using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
@@ -14,6 +16,7 @@ using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,15 +29,19 @@ namespace VideoRemise
         MainPage mainPage;
         int gridColumn;
         CaptureElement captureElement;
-        MediaFrameSourceGroup currentSource;
+        MediaFrameSourceGroup currentSourceGroup;
         MediaCapture currentCapture;
         MediaPlayerElement mediaPlayerElement;
         DisplayRequest currentRequest;
         LowLagMediaRecording mediaRecording;
         InMemoryRandomAccessStream currentRecordingStream;
         MediaSource activeSource;
+        Image displayImage;
         VideoGridManager manager;
         double relativeWidth;
+        private SoftwareBitmap backBuffer;
+        private bool taskRunning = false;
+        private LightDisplay lights;
 
         bool isPreviewing = false;
         bool isRecording = false;
@@ -42,6 +49,8 @@ namespace VideoRemise
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
+        public MediaCapture Capture => currentCapture;
+        public Image DisplayImage => displayImage;
         public int GridColumn => gridColumn;
         //public string VideoSource => currentSource.DisplayName;
 
@@ -63,7 +72,8 @@ namespace VideoRemise
             get
             {
                 if ((mediaPlayerElement.Visibility == Visibility.Collapsed) &&
-                    (captureElement.Visibility == Visibility.Collapsed))
+                    (captureElement?.Visibility == Visibility.Collapsed) &&
+                    (displayImage.Visibility == Visibility.Collapsed))
                 {
                     return Visibility.Collapsed;
                 }
@@ -76,7 +86,8 @@ namespace VideoRemise
             { 
                 if (showingLive)
                 {
-                    captureElement.Visibility = value;
+                    //captureElement.Visibility = value;
+                    displayImage.Visibility = value;
                 }
                 else
                 {
@@ -115,13 +126,22 @@ namespace VideoRemise
                     { Width = new GridLength(1.0, GridUnitType.Star) });
             }
 
-            captureElement = new CaptureElement();
-            captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
-            mainPage.LayoutGrid.Children.Add(captureElement);
-            Grid.SetColumn(captureElement, gridColumn);
-            Grid.SetRow(captureElement, 0);
-            captureElement.IsDoubleTapEnabled = true;
-            captureElement.DoubleTapped += OnCoubleClick;
+            displayImage = new Image();
+            displayImage.HorizontalAlignment = HorizontalAlignment.Stretch;
+            mainPage.LayoutGrid.Children.Add(displayImage);
+            Grid.SetColumn(displayImage, gridColumn);
+            Grid.SetRow(displayImage, 0);
+            displayImage.Source = new SoftwareBitmapSource();
+            displayImage.IsDoubleTapEnabled = true;
+            displayImage.DoubleTapped += OnCoubleClick;
+
+            //captureElement = new CaptureElement();
+            //captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
+            //mainPage.LayoutGrid.Children.Add(captureElement);
+            //Grid.SetColumn(captureElement, gridColumn);
+            //Grid.SetRow(captureElement, 0);
+            //captureElement.IsDoubleTapEnabled = true;
+            //captureElement.DoubleTapped += OnCoubleClick;
 
             mediaPlayerElement = new MediaPlayerElement();
             mediaPlayerElement.Visibility = Visibility.Collapsed;
@@ -130,9 +150,6 @@ namespace VideoRemise
             Grid.SetRow(mediaPlayerElement, 0);
             mediaPlayerElement.IsDoubleTapEnabled = true;
             mediaPlayerElement.DoubleTapped += OnCoubleClick;
-
-            //Action<object, SelectionChangedEventArgs> eventHandler = (object sender, SelectionChangedEventArgs e) => SourceSelector_SelectionChanged(this, sender, e);
-            //sourceSelector.SelectionChanged += new SelectionChangedEventHandler(eventHandler);
 
             currentRequest = new DisplayRequest();
             manager = mgr;
@@ -149,17 +166,27 @@ namespace VideoRemise
             {
                 await StopRecording();
             }
-            if (mediaPlayerElement.MediaPlayer != null)
+            if (mediaPlayerElement?.MediaPlayer != null)
             {
-                mediaPlayerElement.MediaPlayer.Dispose();
+                mediaPlayerElement?.MediaPlayer.Dispose();
             }
             if (currentRecordingStream != null)
             {
                 currentRecordingStream.Dispose();
             }
 
-            captureElement.Visibility = Visibility.Collapsed;
-            mediaPlayerElement.Visibility = Visibility.Collapsed;
+            if (captureElement != null)
+            {
+                captureElement.Visibility = Visibility.Collapsed;
+            }
+            if (mediaPlayerElement != null)
+            {
+                mediaPlayerElement.Visibility = Visibility.Collapsed;
+            }
+            if (displayImage != null)
+            {
+                displayImage.Visibility = Visibility.Collapsed;
+            }
             mainPage.LayoutGrid.ColumnDefinitions.RemoveAt(gridColumn);
         }
 
@@ -175,7 +202,7 @@ namespace VideoRemise
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
         {
             //currentRecordingStream = new InMemoryRandomAccessStream();
-            var myVideos = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
+            var myVideos = await StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
             var fencingVideos = await myVideos.SaveFolder.CreateFolderAsync(SaveSubfolderName,
                 CreationCollisionOption.OpenIfExists);
             var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{ChannelName}.mp4", 
@@ -274,15 +301,15 @@ namespace VideoRemise
 
             await ClearSource();
 
-            currentSource = FindSource(name);
-            if (currentSource != null)
+            currentSourceGroup = FindSource(name);
+            if (currentSourceGroup != null)
             {
                 try
                 {
                     currentCapture = new MediaCapture();
                     var settings = new MediaCaptureInitializationSettings
                     {
-                        VideoDeviceId = GetVideoDeviceId(currentSource),
+                        VideoDeviceId = GetVideoDeviceId(currentSourceGroup),
                         MemoryPreference = MediaCaptureMemoryPreference.Cpu,
                         StreamingCaptureMode = StreamingCaptureMode.Video
                     };
@@ -307,6 +334,19 @@ namespace VideoRemise
                     //    isPreviewing = true;
                     //});
                     await currentCapture.InitializeAsync(settings);
+                    var colorFrameSource = 
+                        currentCapture.FrameSources[GetVideoDeviceId(currentSourceGroup)];
+                    // Get the highest-resolution format that does 32-bit RGB
+                    var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
+                    {
+                        return format.VideoFormat.Width >= 720
+                        && format.Subtype == MediaEncodingSubtypes.Argb32;
+                    }).OrderBy(format => format.VideoFormat.Width).LastOrDefault();
+                    if (preferredFormat != null)
+                    {
+                        await colorFrameSource.SetFormatAsync(preferredFormat);
+                    }
+
                     var props = new StreamPropertiesHelper(currentCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoRecord));
                     AspectRatio = props.AspectRatio;
                     currentRequest.RequestActive();
@@ -315,6 +355,9 @@ namespace VideoRemise
 
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
+
+                    lights = new LightDisplay(this);
+                    await lights.Start();
                 }
                 catch (UnauthorizedAccessException)
                 {

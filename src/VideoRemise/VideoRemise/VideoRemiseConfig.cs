@@ -23,6 +23,8 @@ namespace VideoRemise
         public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
         public int ActionContinuationMillis { get; set; } = 1500;
 
+        public int LightHeightPercentage { get; set; } = 3;
+
         public bool IsReadyToGo => (VideoSources.Count > 0) &&
                     ((!string.IsNullOrWhiteSpace(AdapterDeviceId) 
                             && !string.IsNullOrWhiteSpace(TriggerProtocol)) 
