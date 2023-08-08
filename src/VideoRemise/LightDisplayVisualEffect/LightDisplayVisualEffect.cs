@@ -14,6 +14,7 @@ using Windows.UI;
 using System.Runtime.InteropServices;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Effects;
+using System.Runtime.CompilerServices;
 
 namespace LightDisplayVisualEffect
 {
@@ -41,13 +42,22 @@ namespace LightDisplayVisualEffect
         private IDirect3DDevice device;
         private Lights lights = (Lights)0;
         private Color redLightColor;
+        private uint redLightARGB;
         private Color greenLightColor;
+        private uint greenLightARGB;
         private CanvasDevice canvasDevice;
+
+        private uint ColorToARGBuint(Color color)
+        {
+            return (((uint)color.A) << 24) + (((uint)color.R) << 16) + (((uint)color.G) << 8) + (uint)color.B;
+        }
 
         public LightDisplayVisualEffect()
         {
             redLightColor = Colors.Red;
+            redLightARGB = ColorToARGBuint(redLightColor);
             greenLightColor = Colors.Green;
+            greenLightARGB = ColorToARGBuint(greenLightColor);
         }
 
         public void SetEncodingProperties(VideoEncodingProperties encodingProperties, IDirect3DDevice device)
@@ -93,10 +103,16 @@ namespace LightDisplayVisualEffect
                         out targetCapacity);
 
                     BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
-                    int* inputInts = (int*)dataInBytes;
-                    int* outputInts = (int*)targetDataInBytes;
+                    uint* inputInts = (uint*)dataInBytes;
+                    uint* outputInts = (uint*)targetDataInBytes;
                     int start = bufferLayout.StartIndex / 4;
                     int stride = bufferLayout.Stride / 4;
+                    int topBorder = bufferLayout.Height / 24;
+                    int lightWidth = bufferLayout.Width / 4;
+                    int leftStart = bufferLayout.Width / 8;
+                    int leftEnd = leftStart + lightWidth;
+                    int rightStart = 5 * bufferLayout.Width / 8;
+                    int rightEnd = rightStart + lightWidth;
                     for (int i = 0; i < bufferLayout.Height; i++)
                     {
                         for (int j = 0; j < bufferLayout.Width; j++)
@@ -104,11 +120,24 @@ namespace LightDisplayVisualEffect
                             //const int bytesPerPixel = 4; // Since we only support ARGB32
                             //int idx = bufferLayout.StartIndex + bufferLayout.Stride * i + bytesPerPixel * j;
                             int idx = start + stride * i + j;
-                            outputInts[idx] = inputInts[idx];
-                            //targetDataInBytes[idx + 0] = dataInBytes[idx + 0];
-                            //targetDataInBytes[idx + 1] = dataInBytes[idx + 1];
-                            //targetDataInBytes[idx + 2] = dataInBytes[idx + 2];
-                            //targetDataInBytes[idx + 3] = dataInBytes[idx + 3];
+                            if (i < topBorder)
+                            {
+                                if (leftStart <= j && j < leftEnd)
+                                {
+                                    outputInts[idx] = redLightARGB;
+                                } else if (rightStart <= j && j < rightEnd)
+                                {
+                                    outputInts[idx] = greenLightARGB;
+                                }
+                                else
+                                {
+                                    outputInts[idx] = inputInts[idx];
+                                }
+                            }
+                            else
+                            {
+                                outputInts[idx] = inputInts[idx];
+                            }
                         }
                     }
                 }
