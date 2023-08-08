@@ -11,9 +11,20 @@ using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Devices.Sensors;
 using Windows.UI;
+using System.Runtime.InteropServices;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Effects;
 
 namespace LightDisplayVisualEffect
 {
+    [ComImport]
+    [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    unsafe interface IMemoryBufferByteAccess
+    {
+        void GetBuffer(out byte* buffer, out uint capacity);
+    }
+
     // These specific values match the Favero FA01 outputs, which makes that specific
     // driver slightly simpler, but it really doesn't matter.
     public enum Lights
@@ -31,6 +42,7 @@ namespace LightDisplayVisualEffect
         private Lights lights = (Lights)0;
         private Color redLightColor;
         private Color greenLightColor;
+        private CanvasDevice canvasDevice;
 
         public LightDisplayVisualEffect()
         {
@@ -42,6 +54,10 @@ namespace LightDisplayVisualEffect
         {
             this.encodingProperties = encodingProperties;
             this.device = device;
+            if (device != null)
+            {
+                canvasDevice = CanvasDevice.CreateFromDirect3D11Device(device);
+            }
         }
 
         public void ProcessFrame(ProcessVideoFrameContext context)
@@ -56,13 +72,61 @@ namespace LightDisplayVisualEffect
             }
         }
 
-        private void ProcessSoftwareBitmap(ProcessVideoFrameContext context)
+        private unsafe void ProcessSoftwareBitmap(ProcessVideoFrameContext context)
         {
+            using (BitmapBuffer buffer = context.InputFrame.SoftwareBitmap.LockBuffer(
+                BitmapBufferAccessMode.Read))
+            using (BitmapBuffer targetBuffer = context.OutputFrame.SoftwareBitmap.LockBuffer(
+                BitmapBufferAccessMode.Write))
+            {
+                using (var reference = buffer.CreateReference())
+                using (var targetReference = targetBuffer.CreateReference())
+                {
+                    byte* dataInBytes;
+                    uint capacity;
+                    ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
+
+                    byte* targetDataInBytes;
+                    uint targetCapacity;
+                    ((IMemoryBufferByteAccess)targetReference).GetBuffer(out targetDataInBytes, 
+                        out targetCapacity);
+
+                    // Fill-in the BGRA plane
+                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+                    for (int i = 0; i < bufferLayout.Height; i++)
+                    {
+                        for (int j = 0; j < bufferLayout.Width; j++)
+                        {
+
+                            byte value = (byte)((float)j / bufferLayout.Width * 255);
+
+                            int bytesPerPixel = 4;
+                            if (encodingProperties.Subtype != "ARGB32")
+                            {
+                                // If you support other encodings, adjust index into the buffer accordingly
+                            }
+
+
+                            int idx = bufferLayout.StartIndex + bufferLayout.Stride * i + bytesPerPixel * j;
+
+                            targetDataInBytes[idx + 0] = dataInBytes[idx + 0];
+                            targetDataInBytes[idx + 1] = dataInBytes[idx + 1];
+                            targetDataInBytes[idx + 2] = dataInBytes[idx + 2];
+                            targetDataInBytes[idx + 3] = dataInBytes[idx + 3];
+                        }
+                    }
+                }
+            }
         }
 
         private void ProcessDirect3DSurface(ProcessVideoFrameContext context)
         {
-
+            using (CanvasBitmap inputBitmap = CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, context.InputFrame.Direct3DSurface))
+            using (CanvasRenderTarget renderTarget = CanvasRenderTarget.CreateFromDirect3D11Surface(canvasDevice, context.OutputFrame.Direct3DSurface))
+            using (CanvasDrawingSession ds = renderTarget.CreateDrawingSession())
+            {
+                ds.DrawImage(inputBitmap);
+            }
         }
 
         public void Close(MediaEffectClosedReason reason)
