@@ -123,7 +123,6 @@
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FaveroFA01Trigger.cs" />
-    <Compile Include="LightDisplay.cs" />
     <Compile Include="Match.cs" />
     <Compile Include="SerialTrigger.cs" />
     <Compile Include="TriggerEvent.cs" />
@@ -182,6 +181,12 @@
     <PackageReference Include="YamlDotNet">
       <Version>13.1.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LightDisplayVisualEffect\LightDisplayVisualEffect.csproj">
+      <Project>{c340a23b-6208-4b12-b493-05ade4498365}</Project>
+      <Name>LightDisplayVisualEffect</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

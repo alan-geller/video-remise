@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LightDisplayVisualEffect;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -7,16 +8,6 @@ using System.Threading.Tasks;
 
 namespace VideoRemise
 {
-    // These specific values match the Favero FA01 outputs, which makes that specific
-    // driver slightly simpler, but it really doesn't matter.
-    public enum Lights
-    {
-        LeftWhite = 1,
-        RightWhite = 2,
-        Red = 4,            // Red is left on-target
-        Green = 8
-    }
-
     internal abstract class Trigger
     {
         public class LightEventArgs : EventArgs

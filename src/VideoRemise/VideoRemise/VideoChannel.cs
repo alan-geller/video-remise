@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
+using Windows.Media.Effects;
 using Windows.Media.MediaProperties;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -26,34 +29,35 @@ namespace VideoRemise
     {
         public const string SaveSubfolderName = "Fencing Matches";
 
-        MainPage mainPage;
-        int gridColumn;
-        CaptureElement captureElement;
-        MediaFrameSourceGroup currentSourceGroup;
-        MediaCapture currentCapture;
-        MediaPlayerElement mediaPlayerElement;
-        DisplayRequest currentRequest;
-        LowLagMediaRecording mediaRecording;
-        InMemoryRandomAccessStream currentRecordingStream;
-        MediaSource activeSource;
-        Image displayImage;
-        VideoGridManager manager;
-        double relativeWidth;
-        private SoftwareBitmap backBuffer;
-        private bool taskRunning = false;
-        private LightDisplay lights;
+        private MainPage mainPage;
+        private int gridColumn;
+        private CaptureElement captureElement;
+        private MediaFrameSourceGroup currentSourceGroup;
+        private MediaCapture currentCapture;
+        private MediaPlayerElement mediaPlayerElement;
+        private DisplayRequest currentRequest;
+        private LowLagMediaRecording mediaRecording;
+        private InMemoryRandomAccessStream currentRecordingStream;
+        private MediaSource activeSource;
+        private IMediaExtension recordEffect;
+        private IMediaExtension previewEffect;
+        //private Image displayImage;
+        private VideoGridManager manager;
+        private double relativeWidth;
+        //private SoftwareBitmap backBuffer;
+        //private bool taskRunning = false;
+        //private LightDisplay lights;
 
-        bool isPreviewing = false;
-        bool isRecording = false;
-        bool showingLive = true;
+        private bool isPreviewing = false;
+        private bool isRecording = false;
+        private bool showingLive = true;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
         public MediaCapture Capture => currentCapture;
-        public Image DisplayImage => displayImage;
+        //public Image DisplayImage => displayImage;
         public int GridColumn => gridColumn;
         //public string VideoSource => currentSource.DisplayName;
-
 
         public double AspectRatio { get; set; }
 
@@ -72,8 +76,8 @@ namespace VideoRemise
             get
             {
                 if ((mediaPlayerElement.Visibility == Visibility.Collapsed) &&
-                    (captureElement?.Visibility == Visibility.Collapsed) &&
-                    (displayImage.Visibility == Visibility.Collapsed))
+                    (captureElement?.Visibility == Visibility.Collapsed))
+                    //&& (displayImage.Visibility == Visibility.Collapsed))
                 {
                     return Visibility.Collapsed;
                 }
@@ -86,8 +90,8 @@ namespace VideoRemise
             { 
                 if (showingLive)
                 {
-                    //captureElement.Visibility = value;
-                    displayImage.Visibility = value;
+                    captureElement.Visibility = value;
+                    //displayImage.Visibility = value;
                 }
                 else
                 {
@@ -112,7 +116,7 @@ namespace VideoRemise
             }
         }
 
-        static IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
+        static public IReadOnlyList<MediaFrameSourceGroup> CurrentSources;
         private bool disposedValue;
 
         internal VideoChannel(int col, MainPage page, VideoGridManager mgr)
@@ -126,22 +130,22 @@ namespace VideoRemise
                     { Width = new GridLength(1.0, GridUnitType.Star) });
             }
 
-            displayImage = new Image();
-            displayImage.HorizontalAlignment = HorizontalAlignment.Stretch;
-            mainPage.LayoutGrid.Children.Add(displayImage);
-            Grid.SetColumn(displayImage, gridColumn);
-            Grid.SetRow(displayImage, 0);
-            displayImage.Source = new SoftwareBitmapSource();
-            displayImage.IsDoubleTapEnabled = true;
-            displayImage.DoubleTapped += OnCoubleClick;
+            //displayImage = new Image();
+            //displayImage.HorizontalAlignment = HorizontalAlignment.Stretch;
+            //mainPage.LayoutGrid.Children.Add(displayImage);
+            //Grid.SetColumn(displayImage, gridColumn);
+            //Grid.SetRow(displayImage, 0);
+            //displayImage.Source = new SoftwareBitmapSource();
+            //displayImage.IsDoubleTapEnabled = true;
+            //displayImage.DoubleTapped += OnCoubleClick;
 
-            //captureElement = new CaptureElement();
-            //captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //mainPage.LayoutGrid.Children.Add(captureElement);
-            //Grid.SetColumn(captureElement, gridColumn);
-            //Grid.SetRow(captureElement, 0);
-            //captureElement.IsDoubleTapEnabled = true;
-            //captureElement.DoubleTapped += OnCoubleClick;
+            captureElement = new CaptureElement();
+            captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
+            mainPage.LayoutGrid.Children.Add(captureElement);
+            Grid.SetColumn(captureElement, gridColumn);
+            Grid.SetRow(captureElement, 0);
+            captureElement.IsDoubleTapEnabled = true;
+            captureElement.DoubleTapped += OnCoubleClick;
 
             mediaPlayerElement = new MediaPlayerElement();
             mediaPlayerElement.Visibility = Visibility.Collapsed;
@@ -183,10 +187,10 @@ namespace VideoRemise
             {
                 mediaPlayerElement.Visibility = Visibility.Collapsed;
             }
-            if (displayImage != null)
-            {
-                displayImage.Visibility = Visibility.Collapsed;
-            }
+            //if (displayImage != null)
+            //{
+            //    displayImage.Visibility = Visibility.Collapsed;
+            //}
             mainPage.LayoutGrid.ColumnDefinitions.RemoveAt(gridColumn);
         }
 
@@ -334,17 +338,30 @@ namespace VideoRemise
                     //    isPreviewing = true;
                     //});
                     await currentCapture.InitializeAsync(settings);
-                    var colorFrameSource = 
-                        currentCapture.FrameSources[GetVideoDeviceId(currentSourceGroup)];
-                    // Get the highest-resolution format that does 32-bit RGB
-                    var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
+                    //var colorFrameSource = 
+                    //    currentCapture.FrameSources[GetVideoDeviceId(currentSourceGroup)];
+                    //// Get the highest-resolution format that does 32-bit RGB
+                    //var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
+                    //{
+                    //    return format.VideoFormat.Width >= 720
+                    //    && format.Subtype == MediaEncodingSubtypes.Argb32;
+                    //}).OrderBy(format => format.VideoFormat.Width).LastOrDefault();
+                    //if (preferredFormat != null)
+                    //{
+                    //    await colorFrameSource.SetFormatAsync(preferredFormat);
+                    //}
+
+                    var lightEffect = new VideoEffectDefinition("LightDisplayVisualEffect.LightDisplayVisualEffect");
+                    if (currentCapture.MediaCaptureSettings.VideoDeviceCharacteristic == VideoDeviceCharacteristic.AllStreamsIdentical ||
+                        currentCapture.MediaCaptureSettings.VideoDeviceCharacteristic == VideoDeviceCharacteristic.PreviewRecordStreamsIdentical)
                     {
-                        return format.VideoFormat.Width >= 720
-                        && format.Subtype == MediaEncodingSubtypes.Argb32;
-                    }).OrderBy(format => format.VideoFormat.Width).LastOrDefault();
-                    if (preferredFormat != null)
+                        // This effect will modify both the preview and the record streams, because they are the same stream.
+                        recordEffect = await currentCapture.AddVideoEffectAsync(lightEffect, MediaStreamType.VideoRecord);
+                    }
+                    else
                     {
-                        await colorFrameSource.SetFormatAsync(preferredFormat);
+                        recordEffect = await currentCapture.AddVideoEffectAsync(lightEffect, MediaStreamType.VideoRecord);
+                        previewEffect = await currentCapture.AddVideoEffectAsync(lightEffect, MediaStreamType.VideoPreview);
                     }
 
                     var props = new StreamPropertiesHelper(currentCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoRecord));
@@ -356,8 +373,8 @@ namespace VideoRemise
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
 
-                    lights = new LightDisplay(this);
-                    await lights.Start();
+                    //lights = new LightDisplay(this);
+                    //await lights.Start();
                 }
                 catch (UnauthorizedAccessException)
                 {

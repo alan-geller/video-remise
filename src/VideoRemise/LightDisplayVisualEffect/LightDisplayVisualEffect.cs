@@ -10,11 +10,20 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Devices.Sensors;
-using VideoRemise;
 using Windows.UI;
 
 namespace LightDisplayVisualEffect
 {
+    // These specific values match the Favero FA01 outputs, which makes that specific
+    // driver slightly simpler, but it really doesn't matter.
+    public enum Lights
+    {
+        LeftWhite = 1,
+        RightWhite = 2,
+        Red = 4,            // Red is left on-target
+        Green = 8
+    }
+
     public sealed class LightDisplayVisualEffect : IBasicVideoEffect
     {
         private VideoEncodingProperties encodingProperties;
@@ -29,10 +38,10 @@ namespace LightDisplayVisualEffect
             greenLightColor = Colors.Green;
         }
 
-        public void SetEncodingProperties(VideoEncodingProperties ep, IDirect3DDevice d)
+        public void SetEncodingProperties(VideoEncodingProperties encodingProperties, IDirect3DDevice device)
         {
-            encodingProperties = ep;
-            device = d;
+            this.encodingProperties = encodingProperties;
+            this.device = device;
         }
 
         public void ProcessFrame(ProcessVideoFrameContext context)
@@ -49,7 +58,6 @@ namespace LightDisplayVisualEffect
 
         private void ProcessSoftwareBitmap(ProcessVideoFrameContext context)
         {
-
         }
 
         private void ProcessDirect3DSurface(ProcessVideoFrameContext context)

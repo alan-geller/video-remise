@@ -34,18 +34,18 @@ namespace VideoRemise
         /// <param name="e">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
-            if (!GraphicsCaptureSession.IsSupported())
-            {
-                var errorDialog = new ContentDialog() 
-                { 
-                    CloseButtonText = "OK", 
-                    Title="Screen capture required",
-                    Content="This application requires screen capture, which is not available on this system." +
-                    " You may need to update DirectX or your video driver."
-                };
-                _ = await errorDialog.ShowAsync();
-                throw new Exception("Screen capture is not available on this system");
-            }
+            //if (!GraphicsCaptureSession.IsSupported())
+            //{
+            //    var errorDialog = new ContentDialog() 
+            //    { 
+            //        CloseButtonText = "OK", 
+            //        Title="Screen capture required",
+            //        Content="This application requires screen capture, which is not available on this system." +
+            //        " You may need to update DirectX or your video driver."
+            //    };
+            //    _ = await errorDialog.ShowAsync();
+            //    throw new Exception("Screen capture is not available on this system");
+            //}
 
             Frame rootFrame = Window.Current.Content as Frame;
 
