@@ -72,6 +72,7 @@ namespace LightDisplayVisualEffect
             }
         }
 
+        // This implementation assumes (and is optimized for) ARGB32 encoding
         private unsafe void ProcessSoftwareBitmap(ProcessVideoFrameContext context)
         {
             using (BitmapBuffer buffer = context.InputFrame.SoftwareBitmap.LockBuffer(
@@ -91,28 +92,23 @@ namespace LightDisplayVisualEffect
                     ((IMemoryBufferByteAccess)targetReference).GetBuffer(out targetDataInBytes, 
                         out targetCapacity);
 
-                    // Fill-in the BGRA plane
                     BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+                    int* inputInts = (int*)dataInBytes;
+                    int* outputInts = (int*)targetDataInBytes;
+                    int start = bufferLayout.StartIndex / 4;
+                    int stride = bufferLayout.Stride / 4;
                     for (int i = 0; i < bufferLayout.Height; i++)
                     {
                         for (int j = 0; j < bufferLayout.Width; j++)
                         {
-
-                            byte value = (byte)((float)j / bufferLayout.Width * 255);
-
-                            int bytesPerPixel = 4;
-                            if (encodingProperties.Subtype != "ARGB32")
-                            {
-                                // If you support other encodings, adjust index into the buffer accordingly
-                            }
-
-
-                            int idx = bufferLayout.StartIndex + bufferLayout.Stride * i + bytesPerPixel * j;
-
-                            targetDataInBytes[idx + 0] = dataInBytes[idx + 0];
-                            targetDataInBytes[idx + 1] = dataInBytes[idx + 1];
-                            targetDataInBytes[idx + 2] = dataInBytes[idx + 2];
-                            targetDataInBytes[idx + 3] = dataInBytes[idx + 3];
+                            //const int bytesPerPixel = 4; // Since we only support ARGB32
+                            //int idx = bufferLayout.StartIndex + bufferLayout.Stride * i + bytesPerPixel * j;
+                            int idx = start + stride * i + j;
+                            outputInts[idx] = inputInts[idx];
+                            //targetDataInBytes[idx + 0] = dataInBytes[idx + 0];
+                            //targetDataInBytes[idx + 1] = dataInBytes[idx + 1];
+                            //targetDataInBytes[idx + 2] = dataInBytes[idx + 2];
+                            //targetDataInBytes[idx + 3] = dataInBytes[idx + 3];
                         }
                     }
                 }
