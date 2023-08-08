@@ -30,21 +30,28 @@ namespace LightDisplayVisualEffect
     // driver slightly simpler, but it really doesn't matter.
     public enum Lights
     {
+        None = 0,
         LeftWhite = 1,
         RightWhite = 2,
         Red = 4,            // Red is left on-target
         Green = 8
     }
 
-    public sealed class LightDisplayVisualEffect : IBasicVideoEffect
+    public sealed class LightDisplayEffect : IBasicVideoEffect
     {
+        public const string RedLightColorProperty = "redColor";
+        public const string GreenLightColorProperty = "greenColor";
+        public const string LightStatusProperty = "lights";
+
         private VideoEncodingProperties encodingProperties;
         private IDirect3DDevice device;
-        private Lights lights = (Lights)0;
+        private Lights lights = Lights.None;
         private Color redLightColor;
         private uint redLightARGB;
         private Color greenLightColor;
         private uint greenLightARGB;
+        private Color whiteLightColor;
+        private uint whiteLightARGB;
         private CanvasDevice canvasDevice;
 
         private uint ColorToARGBuint(Color color)
@@ -52,12 +59,14 @@ namespace LightDisplayVisualEffect
             return (((uint)color.A) << 24) + (((uint)color.R) << 16) + (((uint)color.G) << 8) + (uint)color.B;
         }
 
-        public LightDisplayVisualEffect()
+        public LightDisplayEffect()
         {
             redLightColor = Colors.Red;
             redLightARGB = ColorToARGBuint(redLightColor);
             greenLightColor = Colors.Green;
             greenLightARGB = ColorToARGBuint(greenLightColor);
+            whiteLightColor = Colors.White;
+            whiteLightARGB = ColorToARGBuint(whiteLightColor);
         }
 
         public void SetEncodingProperties(VideoEncodingProperties encodingProperties, IDirect3DDevice device)
@@ -113,29 +122,106 @@ namespace LightDisplayVisualEffect
                     int leftEnd = leftStart + lightWidth;
                     int rightStart = 5 * bufferLayout.Width / 8;
                     int rightEnd = rightStart + lightWidth;
-                    for (int i = 0; i < bufferLayout.Height; i++)
+                    bool leftRed = (lights & Lights.Red) != 0;
+                    bool leftWhite = (lights & Lights.LeftWhite) != 0;
+                    bool leftOn = leftRed || leftWhite;
+                    bool rightGreen = (lights & Lights.Green) != 0;
+                    bool rightWhite = (lights & Lights.RightWhite) != 0;
+                    uint rightColor = rightGreen ? greenLightARGB : whiteLightARGB;
+
+                    // Optimize by hand by having multiple loops and pulling branches and
+                    // calculations outside of the loops as much as we can
+                    uint leftColor = leftRed ? redLightARGB : whiteLightARGB;
+                    bool rightOn = rightGreen || rightWhite;
+                    if (leftOn && rightOn)
                     {
-                        for (int j = 0; j < bufferLayout.Width; j++)
+                        for (int i = 0; i < topBorder; i++)
                         {
-                            //const int bytesPerPixel = 4; // Since we only support ARGB32
-                            //int idx = bufferLayout.StartIndex + bufferLayout.Stride * i + bytesPerPixel * j;
-                            int idx = start + stride * i + j;
-                            if (i < topBorder)
+                            for (int j = 0; j < bufferLayout.Width; j++)
                             {
+                                int idx = start + stride * i + j;
                                 if (leftStart <= j && j < leftEnd)
                                 {
-                                    outputInts[idx] = redLightARGB;
-                                } else if (rightStart <= j && j < rightEnd)
+                                    outputInts[idx] = leftColor;
+                                }
+                                else if (rightStart <= j && j < rightEnd)
                                 {
-                                    outputInts[idx] = greenLightARGB;
+                                    outputInts[idx] = rightColor;
                                 }
                                 else
                                 {
                                     outputInts[idx] = inputInts[idx];
                                 }
                             }
-                            else
+                        }
+                        for (int i = topBorder; i < bufferLayout.Height; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
                             {
+                                int idx = start + stride * i + j;
+                                outputInts[idx] = inputInts[idx];
+                            }
+                        }
+                    }
+                    else if (leftOn)
+                    {
+                        for (int i = 0; i < topBorder; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
+                            {
+                                int idx = start + stride * i + j;
+                                if (leftStart <= j && j < leftEnd)
+                                {
+                                    outputInts[idx] = leftColor;
+                                }
+                                else
+                                {
+                                    outputInts[idx] = inputInts[idx];
+                                }
+                            }
+                        }
+                        for (int i = topBorder; i < bufferLayout.Height; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
+                            {
+                                int idx = start + stride * i + j;
+                                outputInts[idx] = inputInts[idx];
+                            }
+                        }
+                    }
+                    else if (rightOn)
+                    {
+                        for (int i = 0; i < topBorder; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
+                            {
+                                int idx = start + stride * i + j;
+                                if (rightStart <= j && j < rightEnd)
+                                {
+                                    outputInts[idx] = rightColor;
+                                }
+                                else
+                                {
+                                    outputInts[idx] = inputInts[idx];
+                                }
+                            }
+                        }
+                        for (int i = topBorder; i < bufferLayout.Height; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
+                            {
+                                int idx = start + stride * i + j;
+                                outputInts[idx] = inputInts[idx];
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < bufferLayout.Height; i++)
+                        {
+                            for (int j = 0; j < bufferLayout.Width; j++)
+                            {
+                                int idx = start + stride * i + j;
                                 outputInts[idx] = inputInts[idx];
                             }
                         }
@@ -183,15 +269,15 @@ namespace LightDisplayVisualEffect
         {
             foreach (var property in configuration)
             {
-                if (property.Key == "lights")
+                if (property.Key == LightStatusProperty)
                 {
                     lights = (Lights)property.Value;
                 }
-                else if (property.Key == "redColor")
+                else if (property.Key == RedLightColorProperty)
                 {
                     redLightColor = (Color)property.Value;
                 }
-                else if (property.Key == "greenColor")
+                else if (property.Key == GreenLightColorProperty)
                 {
                     greenLightColor = (Color)property.Value;
                 }

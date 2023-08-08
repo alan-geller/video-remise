@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using LightDisplayVisualEffect;
+using Windows.Devices.Sensors;
 
 namespace VideoRemise
 {
@@ -23,7 +24,6 @@ namespace VideoRemise
             grid = mp.LayoutGrid;
 
             channels = new List<VideoChannel>();
-            //splitters = new List<GridSplitter>();
         }
 
         internal async Task UpdateGridAsync()
@@ -43,6 +43,11 @@ namespace VideoRemise
             {
                 var channel = new VideoChannel(i++, mainPage, this);
                 await channel.SetSource(source);
+                channel.SetProperty(LightDisplayEffect.RedLightColorProperty,
+                    config.RedLightColor);
+                channel.SetProperty(LightDisplayEffect.GreenLightColorProperty,
+                    config.GreenLightColor);
+                channel.SetProperty(LightDisplayEffect.LightStatusProperty, Lights.None);
                 channels.Add(channel);
                 totalWidth += channel.AspectRatio;
             }
@@ -91,11 +96,6 @@ namespace VideoRemise
                     channels[n].Visibility = Visibility.Visible;
                 }
             }
-
-            //foreach (var sp in splitters)
-            //{
-            //    sp.Visibility = zoomed ? Visibility.Collapsed : Visibility.Visible;
-            //}
         }
 
         internal async Task StartRecording(string fileName)
@@ -130,7 +130,15 @@ namespace VideoRemise
 
         internal void AddTrigger(Trigger activeTrigger)
         {
-            //throw new NotImplementedException();
+            activeTrigger.OnLight += OnLightStatus;
+        }
+
+        private void OnLightStatus(object sender, Trigger.LightEventArgs args)
+        {
+            foreach (var channel in channels)
+            {
+                channel.SetProperty(LightDisplayEffect.LightStatusProperty, args.LightsOn);
+            }
         }
     }
 }

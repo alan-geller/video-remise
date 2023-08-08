@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Windows.Storage;
+using Windows.UI;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace VideoRemise
@@ -23,7 +24,8 @@ namespace VideoRemise
         public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
         public int ActionContinuationMillis { get; set; } = 1500;
 
-        public int LightHeightPercentage { get; set; } = 3;
+        public Color RedLightColor { get; set; } = Colors.Red;
+        public Color GreenLightColor { get; set; }  = Colors.Green;
 
         public bool IsReadyToGo => (VideoSources.Count > 0) &&
                     ((!string.IsNullOrWhiteSpace(AdapterDeviceId) 

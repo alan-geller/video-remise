@@ -21,8 +21,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace VideoRemise
 {
     internal class VideoChannel : IDisposable
@@ -41,12 +39,8 @@ namespace VideoRemise
         private MediaSource activeSource;
         private IMediaExtension recordEffect;
         private IMediaExtension previewEffect;
-        //private Image displayImage;
         private VideoGridManager manager;
         private double relativeWidth;
-        //private SoftwareBitmap backBuffer;
-        //private bool taskRunning = false;
-        //private LightDisplay lights;
 
         private bool isPreviewing = false;
         private bool isRecording = false;
@@ -55,9 +49,7 @@ namespace VideoRemise
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
         public MediaCapture Capture => currentCapture;
-        //public Image DisplayImage => displayImage;
         public int GridColumn => gridColumn;
-        //public string VideoSource => currentSource.DisplayName;
 
         public double AspectRatio { get; set; }
 
@@ -77,7 +69,6 @@ namespace VideoRemise
             {
                 if ((mediaPlayerElement.Visibility == Visibility.Collapsed) &&
                     (captureElement?.Visibility == Visibility.Collapsed))
-                    //&& (displayImage.Visibility == Visibility.Collapsed))
                 {
                     return Visibility.Collapsed;
                 }
@@ -91,7 +82,6 @@ namespace VideoRemise
                 if (showingLive)
                 {
                     captureElement.Visibility = value;
-                    //displayImage.Visibility = value;
                 }
                 else
                 {
@@ -129,15 +119,6 @@ namespace VideoRemise
                 mainPage.LayoutGrid.ColumnDefinitions.Add(new ColumnDefinition() 
                     { Width = new GridLength(1.0, GridUnitType.Star) });
             }
-
-            //displayImage = new Image();
-            //displayImage.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //mainPage.LayoutGrid.Children.Add(displayImage);
-            //Grid.SetColumn(displayImage, gridColumn);
-            //Grid.SetRow(displayImage, 0);
-            //displayImage.Source = new SoftwareBitmapSource();
-            //displayImage.IsDoubleTapEnabled = true;
-            //displayImage.DoubleTapped += OnCoubleClick;
 
             captureElement = new CaptureElement();
             captureElement.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -187,10 +168,6 @@ namespace VideoRemise
             {
                 mediaPlayerElement.Visibility = Visibility.Collapsed;
             }
-            //if (displayImage != null)
-            //{
-            //    displayImage.Visibility = Visibility.Collapsed;
-            //}
             mainPage.LayoutGrid.ColumnDefinitions.RemoveAt(gridColumn);
         }
 
@@ -338,25 +315,14 @@ namespace VideoRemise
                     //    isPreviewing = true;
                     //});
                     await currentCapture.InitializeAsync(settings);
-                    //var colorFrameSource = 
-                    //    currentCapture.FrameSources[GetVideoDeviceId(currentSourceGroup)];
-                    //// Get the highest-resolution format that does 32-bit RGB
-                    //var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
-                    //{
-                    //    return format.VideoFormat.Width >= 720
-                    //    && format.Subtype == MediaEncodingSubtypes.Argb32;
-                    //}).OrderBy(format => format.VideoFormat.Width).LastOrDefault();
-                    //if (preferredFormat != null)
-                    //{
-                    //    await colorFrameSource.SetFormatAsync(preferredFormat);
-                    //}
 
-                    var lightEffect = new VideoEffectDefinition("LightDisplayVisualEffect.LightDisplayVisualEffect");
+                    var lightEffect = new VideoEffectDefinition("LightDisplayVisualEffect.LightDisplayEffect");
                     if (currentCapture.MediaCaptureSettings.VideoDeviceCharacteristic == VideoDeviceCharacteristic.AllStreamsIdentical ||
                         currentCapture.MediaCaptureSettings.VideoDeviceCharacteristic == VideoDeviceCharacteristic.PreviewRecordStreamsIdentical)
                     {
                         // This effect will modify both the preview and the record streams, because they are the same stream.
                         recordEffect = await currentCapture.AddVideoEffectAsync(lightEffect, MediaStreamType.VideoRecord);
+                        previewEffect = null;
                     }
                     else
                     {
@@ -372,9 +338,6 @@ namespace VideoRemise
 
                     await currentCapture.StartPreviewAsync();
                     isPreviewing = true;
-
-                    //lights = new LightDisplay(this);
-                    //await lights.Start();
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -395,6 +358,20 @@ namespace VideoRemise
             {
                 // We use the GetResults method to forcibly de-async; that is, to block.
                 CurrentSources = await MediaFrameSourceGroup.FindAllAsync();
+            }
+        }
+
+        public void SetProperty(string propertyName, object value)
+        {
+            var effectProperties = new PropertySet();
+            effectProperties[propertyName] = value;
+            if (recordEffect != null)
+            {
+                recordEffect.SetProperties(effectProperties);
+            }
+            if (previewEffect != null)
+            {
+                previewEffect.SetProperties(effectProperties);
             }
         }
 
