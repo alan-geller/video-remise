@@ -55,11 +55,11 @@ namespace VideoRemise
             await VideoChannel.Initialize();
 
             //gridManager.AddTrigger(Trigger.ActiveTrigger);
-            //if (config.ManualTriggerEnabled)
-            //{
-            //    var manualTrigger = SetUpManualTrigger();
-            //    gridManager.AddTrigger(manualTrigger);
-            //}
+            if (config.ManualTriggerEnabled)
+            {
+                var manualTrigger = new ManualTrigger(this);
+                gridManager.AddTrigger(manualTrigger);
+            }
 
             Frame.SizeChanged += HandleResize;
 
@@ -76,11 +76,6 @@ namespace VideoRemise
             CurrentMode = Mode.Idle;
 
             SetStatus();
-        }
-
-        private Trigger SetUpManualTrigger()
-        {
-            throw new NotImplementedException();
         }
 
         private void AdjustVideoWidths(double frameWidth)

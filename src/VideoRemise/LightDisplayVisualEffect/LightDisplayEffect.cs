@@ -39,9 +39,9 @@ namespace LightDisplayVisualEffect
 
     public sealed class LightDisplayEffect : IBasicVideoEffect
     {
-        public const string RedLightColorProperty = "redColor";
-        public const string GreenLightColorProperty = "greenColor";
-        public const string LightStatusProperty = "lights";
+        public static string RedLightColorProperty => "redColor";
+        public static string GreenLightColorProperty => "greenColor";
+        public static string LightStatusProperty => "lights";
 
         private VideoEncodingProperties encodingProperties;
         private IDirect3DDevice device;
