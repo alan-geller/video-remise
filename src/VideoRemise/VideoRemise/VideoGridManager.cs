@@ -5,9 +5,16 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using LightDisplayVisualEffect;
 using Windows.Devices.Sensors;
+using System.Diagnostics;
 
 namespace VideoRemise
 {
+    internal struct ReplaySegment
+    {
+        public TimeSpan start;
+        public TimeSpan end;
+    }
+
     internal class VideoGridManager
     {
         private MainPage mainPage;
@@ -15,6 +22,13 @@ namespace VideoRemise
         private Grid grid;
         private List<VideoChannel> channels;
         private bool zoomed = false;
+        private Stopwatch streamStopwatch = new Stopwatch();
+        private TimeSpan replayStart;
+        private TimeSpan replayEnd;
+        private List<ReplaySegment> replays = new List<ReplaySegment>();
+        private bool replayRecording = false;
+        private int replayMillisBeforeTrigger;
+        private int replayMillisAfterTrigger;
 
         public int ChannelCount => channels.Count;
 
@@ -100,12 +114,15 @@ namespace VideoRemise
 
         internal async Task StartRecording(string fileName)
         {
+            replayMillisBeforeTrigger = config.ReplayMillisBeforeTrigger[mainPage.CurrentWeapon];
+            replayMillisAfterTrigger = config.ReplayMillisAfterTrigger[mainPage.CurrentWeapon];
             //List<Task> done = new List<Task>();
             foreach (var channel in channels)
             {
                 //done.Add(channel.StartRecording("test"));
                 await channel.StartRecording(fileName);
             }
+            streamStopwatch.Start();
             //Task.WaitAll(done.ToArray());
         }
 
@@ -117,6 +134,7 @@ namespace VideoRemise
                 //done.Add(channel.StopRecording());
                 await channel.StopRecording();
             }
+            streamStopwatch.Stop();
             //Task.WaitAll(done.ToArray());
         }
 
@@ -138,6 +156,14 @@ namespace VideoRemise
             foreach (var channel in channels)
             {
                 channel.SetProperty(LightDisplayEffect.LightStatusProperty, args.LightsOn);
+            }
+            if (args.LightsOn != Lights.None)
+            {
+                if (!replayRecording)
+                {
+                    replayStart = streamStopwatch.Elapsed - TimeSpan.FromMilliseconds(replayMillisBeforeTrigger);
+                }
+                replayEnd = streamStopwatch.Elapsed + TimeSpan.FromMilliseconds(replayMillisAfterTrigger);
             }
         }
     }
