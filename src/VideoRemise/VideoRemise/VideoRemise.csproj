@@ -123,6 +123,7 @@
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FaveroFA01Trigger.cs" />
+    <Compile Include="ManualTrigger.cs" />
     <Compile Include="Match.cs" />
     <Compile Include="SerialTrigger.cs" />
     <Compile Include="TriggerEvent.cs" />
