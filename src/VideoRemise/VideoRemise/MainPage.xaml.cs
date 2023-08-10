@@ -162,14 +162,14 @@ namespace VideoRemise
                 case VirtualKey.PageUp:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
                     break;
+                case VirtualKey.Space:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
+                    break;
                 case VirtualKey.Left:
                     gridManager.OnPlaybackEvent(PlaybackEvent.FrameBackward);
                     break;
-                case VirtualKey.Space:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
-                    break;
                 case VirtualKey.Right:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
+                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
                     break;
                 case VirtualKey.Back:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Live);
