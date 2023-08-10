@@ -261,20 +261,21 @@ namespace VideoRemise
         {
             if (CurrentMode != Mode.Idle)
             {
+                /*
                 if (config.ReplayMillisAfterTrigger[CurrentWeapon] > 0)
                 {
-                    await Task.Delay(config.ReplayMillisAfterTrigger[CurrentWeapon]);
+                    await Task.Delay(config.ReplayMillisAfterTrigger[CurrentWeapon] * 1000);
                     //foreach (var channel in channels)
                     //{
                     //    await channel.StopRecording();
                     //}
-                }
+                }*/
                 //foreach (var channel in channels)
                 //{
                 //    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
                 //        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
                 //}
-                gridManager.StartPlayback();
+                gridManager.OnHalt(TriggerType.Halt);
                 CurrentMode = Mode.Replaying;
                 SetStatus();
             }

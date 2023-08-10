@@ -144,6 +144,7 @@ namespace VideoRemise
                 channel.StartPlayback();
             }
         }
+
         internal void OnPlaybackEvent(PlaybackEvent playbackEvent)
         {
             foreach (var channel in channels)
@@ -157,6 +158,15 @@ namespace VideoRemise
             activeTrigger.OnLight += OnLightStatus;
         }
 
+        internal async void OnHalt(TriggerType triggerType)
+        {
+            await Task.Delay(replayMillisAfterTrigger * 1000);
+            foreach (var channel in channels)
+            {
+                channel.Trigger((replayMillisBeforeTrigger + replayMillisAfterTrigger), triggerType);
+            }
+        }
+
         private void OnLightStatus(object sender, Trigger.LightEventArgs args)
         {
             foreach (var channel in channels)
@@ -165,11 +175,14 @@ namespace VideoRemise
             }
             if (args.LightsOn != Lights.None)
             {
+                /*
                 if (!replayRecording)
                 {
                     replayStart = streamStopwatch.Elapsed - TimeSpan.FromMilliseconds(replayMillisBeforeTrigger);
                 }
-                replayEnd = streamStopwatch.Elapsed + TimeSpan.FromMilliseconds(replayMillisAfterTrigger);
+                replayEnd = streamStopwatch.Elapsed + TimeSpan.FromMilliseconds(replayMillisAfterTrigger);*/
+                TriggerType tt = (TriggerType)args.LightsOn;
+                OnHalt(tt);
             }
         }
     }

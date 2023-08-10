@@ -53,10 +53,10 @@ namespace VideoRemise
         private MediaCapture currentCapture;
         private MediaPlayerElement mediaPlayerElement;
         private DisplayRequest currentRequest;
-        private List<StorageFile> files;
+        private StorageFile currentFile;
+        private List<PhraseRecording> actions;
         private LowLagMediaRecording mediaRecording;
         private InMemoryRandomAccessStream currentRecordingStream;
-        private MediaSource activeSource;
         private IMediaExtension recordEffect;
         private IMediaExtension previewEffect;
         private VideoGridManager manager;
@@ -159,7 +159,7 @@ namespace VideoRemise
             mediaPlayerElement.IsDoubleTapEnabled = true;
             mediaPlayerElement.DoubleTapped += OnCoubleClick;
 
-            files = new List<StorageFile>();
+            actions = new List<PhraseRecording>();
 
             currentRequest = new DisplayRequest();
             manager = mgr;
@@ -298,8 +298,7 @@ namespace VideoRemise
 
         internal void Forward()
         {
-            // Minus 2 to skip over in progress recording
-            currentReplay = Math.Min(currentReplay + 1, files.Count - (isRecording ? 2 : 1));
+            currentReplay = Math.Min(currentReplay + 1, actions.Count - 1);
             PlayFromFile();
             mainPage.CurrentMode = Mode.Replaying;
         }
@@ -314,18 +313,32 @@ namespace VideoRemise
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
         {
-            currentRecordingStream = new InMemoryRandomAccessStream();
+            baseName = fileBaseName;
+            return await StartPhrase();
+        }
+
+        internal async Task<IAsyncAction> StartPhrase()
+        {
             var myVideos = await StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
             var fencingVideos = await myVideos.SaveFolder.CreateFolderAsync(SaveSubfolderName,
                 CreationCollisionOption.OpenIfExists);
-            var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{ChannelName}.mp4", 
+            currentFile = await fencingVideos.CreateFileAsync($"{baseName}-{ChannelName}.mp4",
                 CreationCollisionOption.GenerateUniqueName);
-            files.Add(file);
-            mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
-            //mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
+            mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentFile);
             isRecording = true;
-            baseName = fileBaseName;
             return mediaRecording.StartAsync();
+        }
+
+        internal async Task EndPhrase(int length, TriggerType triggerType)
+        {
+            if (!isRecording)
+            {
+                return;
+            }
+
+            await StopRecording();
+            PhraseRecording pr = new PhraseRecording(currentFile, length, triggerType);
+            actions.Add(pr);
         }
 
         internal async Task<IAsyncAction> StopRecording()
@@ -335,6 +348,18 @@ namespace VideoRemise
             return mediaRecording.FinishAsync();
         }
 
+        internal async void Trigger(int length, TriggerType triggerType)
+        {
+            if (!isRecording)
+            {
+                return;
+            }
+
+            await EndPhrase(length, triggerType);
+            await StartPhrase();
+            StartPlayback();
+        }
+
         internal void PlayFromFile()
         {
             captureElement.Visibility = Visibility.Collapsed;
@@ -342,52 +367,27 @@ namespace VideoRemise
             showingLive = false;
             playing = true;
 
-            var file = files.ElementAt(currentReplay);
-            activeSource = MediaSource.CreateFromStorageFile(file);
-            mediaPlayerElement.Source = activeSource;
+            var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
+            mediaPlayerElement.Source = source;
             mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
             {
-                //sender.Pause();
-                var _duration = sender.PlaybackSession.NaturalDuration.TotalSeconds;
-                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(_duration - 6, 0));
+                var start = sender.PlaybackSession.NaturalDuration - length;
+                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
             mediaPlayerElement.MediaPlayer.MediaEnded += (MediaPlayer sender, object args) =>
             {
                 sender.Pause();
-                var _duration = sender.PlaybackSession.NaturalDuration.TotalSeconds;
-                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(_duration - 6, 0));
+                var start = sender.PlaybackSession.NaturalDuration - length;
+                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
         }
 
-        internal async void StartPlayback()
+        internal void StartPlayback()
         {
-            if (isRecording)
-            {
-                await StopRecording();
-            }
-
-            currentReplay = files.Count - 1;
+            currentReplay = actions.Count - 1;
             PlayFromFile();
-
-            await StartRecording(baseName);
-        }
-
-        internal async Task StartLoop(int length)
-        {
-            if (isRecording)
-            {
-                await StopRecording();
-            }
-            captureElement.Visibility = Visibility.Collapsed;
-            mediaPlayerElement.Visibility = Visibility.Visible;
-            showingLive = false;
-            activeSource = MediaSource.CreateFromStream(currentRecordingStream, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto).ToString());
-            mediaPlayerElement.Source = activeSource;
-            var duration = activeSource.Duration?.TotalSeconds ?? 0;
-            mediaPlayerElement.MediaPlayer.PlaybackSession.Position = System.TimeSpan.FromSeconds(Math.Max(duration - length, 0));
-            mediaPlayerElement.MediaPlayer.Play();
         }
 
         internal async Task ClearSource()
@@ -547,7 +547,9 @@ namespace VideoRemise
                 {
                     if (isRecording)
                     {
-                        await StopRecording();
+                        // EndPhrase will ensure the current recording is saved in case of accidental shutdown
+                        // It will ensure the recording is closed
+                        await EndPhrase(0, TriggerType.Halt);
                     }
                     if (mediaPlayerElement.MediaPlayer != null)
                     {

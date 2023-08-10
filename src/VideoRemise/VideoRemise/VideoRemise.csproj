@@ -125,6 +125,7 @@
     <Compile Include="FaveroFA01Trigger.cs" />
     <Compile Include="ManualTrigger.cs" />
     <Compile Include="Match.cs" />
+    <Compile Include="PhraseRecording.cs" />
     <Compile Include="SerialTrigger.cs" />
     <Compile Include="TriggerEvent.cs" />
     <Compile Include="VideoRemiseConfig.cs" />
