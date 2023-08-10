@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Input;
 using Windows.System;
 using LightDisplayVisualEffect;
 using System.Threading;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
 
 namespace VideoRemise
 {
@@ -28,10 +30,11 @@ namespace VideoRemise
         public ManualTrigger(MainPage main)
         {
             mainPage = main;
-            mainPage.KeyDown += OnKeyDown;
+            //mainPage.KeyDown += OnKeyDown;
+            Window.Current.CoreWindow.KeyDown += OnKeyDown;
         }
 
-        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        private void OnKeyDown(CoreWindow sender, KeyEventArgs args)
         {
             void HandleLights(Lights l)
             {
@@ -48,9 +51,9 @@ namespace VideoRemise
                 data.ResetTimer = t;
             }
 
-            switch (e.Key)
+            switch (args.VirtualKey)
             {
-                case VirtualKey.Space:
+                case VirtualKey.Pause:
                     if (clockRunning)
                     {
                         FireClockStopEvent();

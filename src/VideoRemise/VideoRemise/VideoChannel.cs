@@ -29,6 +29,7 @@ namespace VideoRemise
         Backward,
         FrameForward,
         FrameBackward,
+        Live,
         Speed10,
         Speed20,
         Speed30,
@@ -66,6 +67,7 @@ namespace VideoRemise
         private bool isPreviewing = false;
         private bool isRecording = false;
         private bool showingLive = true;
+        private bool playing = false;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
@@ -197,7 +199,7 @@ namespace VideoRemise
         // Various methods for controlling playback
         internal void OnPlaybackEvent(PlaybackEvent playbackEvent)
         {
-            if (mediaPlayerElement.Visibility == Visibility.Collapsed)
+            if (!playing && playbackEvent != PlaybackEvent.Backward && playbackEvent != PlaybackEvent.Forward)
             {
                 return;
             }
@@ -218,6 +220,9 @@ namespace VideoRemise
                     break;
                 case PlaybackEvent.FrameBackward:
                     FrameBackward();
+                    break;
+                case PlaybackEvent.Live:
+                    Live();
                     break;
                 case PlaybackEvent.Speed10:
                     SetSpeed(.1);
@@ -288,12 +293,23 @@ namespace VideoRemise
         {
             currentReplay = Math.Max(currentReplay - 1, 0);
             PlayFromFile();
+            mainPage.CurrentMode = Mode.Replaying;
         }
 
         internal void Forward()
         {
-            currentReplay = Math.Max(currentReplay + 1, files.Count - 1);
+            // Minus 2 to skip over in progress recording
+            currentReplay = Math.Min(currentReplay + 1, files.Count - (isRecording ? 2 : 1));
             PlayFromFile();
+            mainPage.CurrentMode = Mode.Replaying;
+        }
+
+        internal void Live()
+        {
+            captureElement.Visibility = Visibility.Visible;
+            mediaPlayerElement.Visibility = Visibility.Collapsed;
+            showingLive = true;
+            playing = false;
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
@@ -321,6 +337,11 @@ namespace VideoRemise
 
         internal void PlayFromFile()
         {
+            captureElement.Visibility = Visibility.Collapsed;
+            mediaPlayerElement.Visibility = Visibility.Visible;
+            showingLive = false;
+            playing = true;
+
             var file = files.ElementAt(currentReplay);
             activeSource = MediaSource.CreateFromStorageFile(file);
             mediaPlayerElement.Source = activeSource;
@@ -347,9 +368,6 @@ namespace VideoRemise
                 await StopRecording();
             }
 
-            captureElement.Visibility = Visibility.Collapsed;
-            mediaPlayerElement.Visibility = Visibility.Visible;
-            showingLive = false;
             currentReplay = files.Count - 1;
             PlayFromFile();
 

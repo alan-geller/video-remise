@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.UI;
+using System;
 using System.Threading.Tasks;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -38,11 +40,10 @@ namespace VideoRemise
 
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             gridManager = new VideoGridManager(this);
-
-            this.PreviewKeyDown += OnKeyDownPreview;
+            Window.Current.CoreWindow.KeyDown += OnKeyDown;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -151,10 +152,9 @@ namespace VideoRemise
             }
         }
 
-        private void OnKeyDownPreview(object sender, KeyRoutedEventArgs e)
+        public void OnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            PlaybackEvent? pbe = null;
-            switch (e.Key)
+            switch (e.VirtualKey)
             {
                 case VirtualKey.PageDown:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
@@ -162,14 +162,19 @@ namespace VideoRemise
                 case VirtualKey.PageUp:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
                     break;
-                case VirtualKey.J:
+                case VirtualKey.Left:
                     gridManager.OnPlaybackEvent(PlaybackEvent.FrameBackward);
                     break;
-                case VirtualKey.L:
+                case VirtualKey.Space:
                     gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
                     break;
-                case VirtualKey.K:
+                case VirtualKey.Right:
                     gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
+                    break;
+                case VirtualKey.Back:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Live);
+                    CurrentMode = Mode.Recording;
+                    SetStatus();
                     break;
                 case VirtualKey.Number0:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Speed100);
@@ -204,6 +209,8 @@ namespace VideoRemise
                 default:
                     break;
             }
+
+            SetStatus();
         }
 
         //private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
