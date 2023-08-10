@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using LightDisplayVisualEffect;
-using Windows.Devices.Sensors;
 using System.Diagnostics;
 
 namespace VideoRemise
@@ -143,6 +142,13 @@ namespace VideoRemise
             foreach (var channel in channels)
             {
                 channel.StartPlayback();
+            }
+        }
+        internal void OnPlaybackEvent(PlaybackEvent playbackEvent)
+        {
+            foreach (var channel in channels)
+            {
+                channel.OnPlaybackEvent(playbackEvent);
             }
         }
 

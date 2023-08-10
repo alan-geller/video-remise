@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 
 namespace VideoRemise
@@ -39,6 +41,8 @@ namespace VideoRemise
             this.InitializeComponent();
 
             gridManager = new VideoGridManager(this);
+
+            this.PreviewKeyDown += OnKeyDownPreview;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -147,6 +151,61 @@ namespace VideoRemise
             }
         }
 
+        private void OnKeyDownPreview(object sender, KeyRoutedEventArgs e)
+        {
+            PlaybackEvent? pbe = null;
+            switch (e.Key)
+            {
+                case VirtualKey.PageDown:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
+                    break;
+                case VirtualKey.PageUp:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
+                    break;
+                case VirtualKey.J:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameBackward);
+                    break;
+                case VirtualKey.L:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
+                    break;
+                case VirtualKey.K:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
+                    break;
+                case VirtualKey.Number0:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed100);
+                    break;
+                case VirtualKey.Number1:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed10);
+                    break;
+                case VirtualKey.Number2:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed20);
+                    break;
+                case VirtualKey.Number3:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed30);
+                    break;
+                case VirtualKey.Number4:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed40);
+                    break;
+                case VirtualKey.Number5:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed50);
+                    break;
+                case VirtualKey.Number6:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed60);
+                    break;
+                case VirtualKey.Number7:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed70);
+                    break;
+                case VirtualKey.Number8:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed80);
+                    break;
+                case VirtualKey.Number9:
+                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed90);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         //private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
         //{
         //    if (Recording)
@@ -208,6 +267,7 @@ namespace VideoRemise
                 //    channel.StartLoop(config.ReplaySecondsAfterTrigger[CurrentWeapon] +
                 //        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
                 //}
+                gridManager.StartPlayback();
                 CurrentMode = Mode.Replaying;
                 SetStatus();
             }

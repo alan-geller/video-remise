@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
-using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
 using Windows.Media.Effects;
 using Windows.Media.MediaProperties;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Display;
@@ -19,10 +19,28 @@ using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace VideoRemise
 {
+    public enum PlaybackEvent
+    {
+        PlayPause,
+        Forward,
+        Backward,
+        FrameForward,
+        FrameBackward,
+        Speed10,
+        Speed20,
+        Speed30,
+        Speed40,
+        Speed50,
+        Speed60,
+        Speed70,
+        Speed80,
+        Speed90,
+        Speed100,
+    }
+
     internal class VideoChannel : IDisposable
     {
         public const string SaveSubfolderName = "Fencing Matches";
@@ -34,6 +52,7 @@ namespace VideoRemise
         private MediaCapture currentCapture;
         private MediaPlayerElement mediaPlayerElement;
         private DisplayRequest currentRequest;
+        private List<StorageFile> files;
         private LowLagMediaRecording mediaRecording;
         private InMemoryRandomAccessStream currentRecordingStream;
         private MediaSource activeSource;
@@ -41,6 +60,8 @@ namespace VideoRemise
         private IMediaExtension previewEffect;
         private VideoGridManager manager;
         private double relativeWidth;
+        private int currentReplay = -1;
+        private string baseName;
 
         private bool isPreviewing = false;
         private bool isRecording = false;
@@ -136,6 +157,8 @@ namespace VideoRemise
             mediaPlayerElement.IsDoubleTapEnabled = true;
             mediaPlayerElement.DoubleTapped += OnCoubleClick;
 
+            files = new List<StorageFile>();
+
             currentRequest = new DisplayRequest();
             manager = mgr;
         }
@@ -171,26 +194,121 @@ namespace VideoRemise
             mainPage.LayoutGrid.ColumnDefinitions.RemoveAt(gridColumn);
         }
 
-        internal async Task Pause()
+        // Various methods for controlling playback
+        internal void OnPlaybackEvent(PlaybackEvent playbackEvent)
         {
+            if (mediaPlayerElement.Visibility == Visibility.Collapsed)
+            {
+                return;
+            }
+
+            switch (playbackEvent)
+            {
+                case PlaybackEvent.PlayPause:
+                    PlayPause();
+                    break;
+                case PlaybackEvent.Forward:
+                    Forward();
+                    break;
+                case PlaybackEvent.Backward:
+                    Back();
+                    break;
+                case PlaybackEvent.FrameForward:
+                    FrameForward();
+                    break;
+                case PlaybackEvent.FrameBackward:
+                    FrameBackward();
+                    break;
+                case PlaybackEvent.Speed10:
+                    SetSpeed(.1);
+                    break;
+                case PlaybackEvent.Speed20:
+                    SetSpeed(.2);
+                    break;
+                case PlaybackEvent.Speed30:
+                    SetSpeed(.3);
+                    break;
+                case PlaybackEvent.Speed40:
+                    SetSpeed(.4);
+                    break;
+                case PlaybackEvent.Speed50:
+                    SetSpeed(.5);
+                    break;
+                case PlaybackEvent.Speed60:
+                    SetSpeed(.6);
+                    break;
+                case PlaybackEvent.Speed70:
+                    SetSpeed(.7);
+                    break;
+                case PlaybackEvent.Speed80:
+                    SetSpeed(.8);
+                    break;
+                case PlaybackEvent.Speed90:
+                    SetSpeed(.9);
+                    break;
+                case PlaybackEvent.Speed100:
+                    SetSpeed(1);
+                    break;
+            }
         }
 
-        internal async Task Resume()
+        internal void PlayPause()
         {
+            if (mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
+            {
+                mediaPlayerElement.MediaPlayer.Play();
+            }
+            else
+            {
+                mediaPlayerElement.MediaPlayer.Pause();
+            }
+        }
 
+        internal void Resume()
+        {
+            mediaPlayerElement.MediaPlayer.Play();
+        }
+
+        internal void SetSpeed(double speed)
+        {
+            mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackRate = speed;
+        }
+
+        internal void FrameForward()
+        {
+            mediaPlayerElement.MediaPlayer.StepForwardOneFrame();
+        }
+
+        internal void FrameBackward()
+        {
+            mediaPlayerElement.MediaPlayer.StepBackwardOneFrame();
+        }
+
+        internal void Back()
+        {
+            currentReplay = Math.Max(currentReplay - 1, 0);
+            PlayFromFile();
+        }
+
+        internal void Forward()
+        {
+            currentReplay = Math.Max(currentReplay + 1, files.Count - 1);
+            PlayFromFile();
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
         {
-            //currentRecordingStream = new InMemoryRandomAccessStream();
+            currentRecordingStream = new InMemoryRandomAccessStream();
             var myVideos = await StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Videos);
             var fencingVideos = await myVideos.SaveFolder.CreateFolderAsync(SaveSubfolderName,
                 CreationCollisionOption.OpenIfExists);
             var file = await fencingVideos.CreateFileAsync($"{fileBaseName}-{ChannelName}.mp4", 
                 CreationCollisionOption.GenerateUniqueName);
+            files.Add(file);
             mediaRecording = await currentCapture.PrepareLowLagRecordToStorageFileAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), file);
             //mediaRecording = await currentCapture.PrepareLowLagRecordToStreamAsync(MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto), currentRecordingStream);
             isRecording = true;
+            baseName = fileBaseName;
             return mediaRecording.StartAsync();
         }
 
@@ -201,13 +319,41 @@ namespace VideoRemise
             return mediaRecording.FinishAsync();
         }
 
-        internal void StartPlayback()
+        internal void PlayFromFile()
         {
+            var file = files.ElementAt(currentReplay);
+            activeSource = MediaSource.CreateFromStorageFile(file);
+            mediaPlayerElement.Source = activeSource;
+            mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
+            {
+                //sender.Pause();
+                var _duration = sender.PlaybackSession.NaturalDuration.TotalSeconds;
+                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(_duration - 6, 0));
+                sender.Play();
+            };
+            mediaPlayerElement.MediaPlayer.MediaEnded += (MediaPlayer sender, object args) =>
+            {
+                sender.Pause();
+                var _duration = sender.PlaybackSession.NaturalDuration.TotalSeconds;
+                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(_duration - 6, 0));
+                sender.Play();
+            };
+        }
+
+        internal async void StartPlayback()
+        {
+            if (isRecording)
+            {
+                await StopRecording();
+            }
+
             captureElement.Visibility = Visibility.Collapsed;
             mediaPlayerElement.Visibility = Visibility.Visible;
             showingLive = false;
-            mediaPlayerElement.Source = MediaSource.CreateFromStream(currentRecordingStream, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto).ToString());
-            mediaPlayerElement.MediaPlayer.Play();
+            currentReplay = files.Count - 1;
+            PlayFromFile();
+
+            await StartRecording(baseName);
         }
 
         internal async Task StartLoop(int length)
