@@ -41,6 +41,13 @@ namespace VideoRemise
 
             gridManager = new VideoGridManager(this);
             Window.Current.CoreWindow.KeyDown += OnKeyDown;
+            CommandBar.PreviewKeyDown += (object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e) =>
+            {
+                if (CurrentMode != Mode.Idle)
+                {
+                    e.Handled = true;
+                }
+            };
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
