@@ -171,7 +171,10 @@ namespace VideoRemise
                 case VirtualKey.Right:
                     gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
                     break;
-                case VirtualKey.Back:
+                case VirtualKey.Enter:
+                    gridManager.OnHalt(TriggerType.Halt);
+                    break;
+                case VirtualKey.Home:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Live);
                     CurrentMode = Mode.Recording;
                     SetStatus();
@@ -244,7 +247,7 @@ namespace VideoRemise
         //    }
         //}
 
-        private async void OnPlay(object sender, RoutedEventArgs e)
+        private void OnPlay(object sender, RoutedEventArgs e)
         {
             if (CurrentMode == Mode.Idle)
             {
@@ -257,7 +260,7 @@ namespace VideoRemise
             }
         }
 
-        private async void OnTrigger(object sender, RoutedEventArgs e)
+        private void OnTrigger(object sender, RoutedEventArgs e)
         {
             if (CurrentMode != Mode.Idle)
             {
@@ -316,7 +319,7 @@ namespace VideoRemise
                 "Set up match";
         }
 
-        private void SetStatus()
+        internal void SetStatus()
         {
             var content = CommandBar.Content as TextBlock;
             switch (CurrentMode)
