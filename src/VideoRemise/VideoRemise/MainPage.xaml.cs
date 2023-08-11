@@ -1,11 +1,8 @@
-﻿using Microsoft.Toolkit.Uwp.UI;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 
 namespace VideoRemise
@@ -85,10 +82,10 @@ namespace VideoRemise
 
         private void AdjustVideoWidths(double frameWidth)
         {
-            var lightWidth = Math.Max(frameWidth / 3.0, 100);
-            leftLight.Width = lightWidth;
-            rightLight.Width = lightWidth;
-            lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
+            //var lightWidth = Math.Max(frameWidth / 3.0, 100);
+            //leftLight.Width = lightWidth;
+            //rightLight.Width = lightWidth;
+            //lightSpacer.Width = frameWidth - leftLight.ActualWidth - rightLight.ActualWidth;
 
             gridManager.AdjustWidths(frameWidth);
         }
@@ -120,8 +117,8 @@ namespace VideoRemise
                     $"No match";
                 await gridManager.StartRecording(fileName);
 
-                leftLight.Opacity = 0.50;
-                rightLight.Opacity = 0.50;
+                //leftLight.Opacity = 0.50;
+                //rightLight.Opacity = 0.50;
 
                 //PauseBtn.IsEnabled = true;
                 PlayBtn.IsEnabled = true;
