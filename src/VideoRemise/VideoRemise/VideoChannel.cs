@@ -293,14 +293,12 @@ namespace VideoRemise
         {
             currentReplay = Math.Max(currentReplay - 1, 0);
             PlayFromFile();
-            mainPage.CurrentMode = Mode.Replaying;
         }
 
         internal void Forward()
         {
             currentReplay = Math.Min(currentReplay + 1, actions.Count - 1);
             PlayFromFile();
-            mainPage.CurrentMode = Mode.Replaying;
         }
 
         internal void Live()
@@ -309,6 +307,7 @@ namespace VideoRemise
             mediaPlayerElement.Visibility = Visibility.Collapsed;
             showingLive = true;
             playing = false;
+            mainPage.CurrentMode = Mode.Recording;
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
@@ -366,6 +365,7 @@ namespace VideoRemise
             mediaPlayerElement.Visibility = Visibility.Visible;
             showingLive = false;
             playing = true;
+            mainPage.CurrentMode = Mode.Replaying;
 
             var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
             mediaPlayerElement.Source = source;

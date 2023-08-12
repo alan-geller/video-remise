@@ -180,7 +180,6 @@ namespace VideoRemise
                     break;
                 case VirtualKey.Home:
                     gridManager.OnPlaybackEvent(PlaybackEvent.Live);
-                    CurrentMode = Mode.Recording;
                     SetStatus();
                     break;
                 case VirtualKey.Number0:
