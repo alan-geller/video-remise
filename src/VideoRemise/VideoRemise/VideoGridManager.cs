@@ -165,7 +165,7 @@ namespace VideoRemise
             await Task.Delay(replayMillisAfterTrigger * 1000);
             foreach (var channel in channels)
             {
-                channel.Trigger((replayMillisBeforeTrigger + replayMillisAfterTrigger), triggerType);
+                channel.Trigger(TimeSpan.FromSeconds(replayMillisBeforeTrigger + replayMillisAfterTrigger), triggerType);
             }
             mainPage.CurrentMode = Mode.Replaying;
             mainPage.SetStatus();

@@ -328,7 +328,7 @@ namespace VideoRemise
             return mediaRecording.StartAsync();
         }
 
-        internal async Task EndPhrase(int length, TriggerType triggerType)
+        internal async Task EndPhrase(TimeSpan length, TriggerType triggerType)
         {
             if (!isRecording)
             {
@@ -347,7 +347,7 @@ namespace VideoRemise
             return mediaRecording.FinishAsync();
         }
 
-        internal async void Trigger(int length, TriggerType triggerType)
+        internal async void Trigger(TimeSpan length, TriggerType triggerType)
         {
             if (!isRecording)
             {
@@ -549,7 +549,7 @@ namespace VideoRemise
                     {
                         // EndPhrase will ensure the current recording is saved in case of accidental shutdown
                         // It will ensure the recording is closed
-                        await EndPhrase(0, TriggerType.Halt);
+                        await EndPhrase(TimeSpan.Zero, TriggerType.Halt);
                     }
                     if (mediaPlayerElement.MediaPlayer != null)
                     {

@@ -16,10 +16,10 @@ namespace VideoRemise
         private TimeSpan replayLength;
         private TriggerType triggerEvent;
 
-        public PhraseRecording(StorageFile _file, int _seconds, TriggerType _triggerEvent)
+        public PhraseRecording(StorageFile _file, TimeSpan _seconds, TriggerType _triggerEvent)
         {
             file = _file;
-            replayLength = TimeSpan.FromSeconds(_seconds);
+            replayLength = _seconds;
             triggerEvent = _triggerEvent;
         }
 
