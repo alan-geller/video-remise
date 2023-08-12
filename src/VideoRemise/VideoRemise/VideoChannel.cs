@@ -30,6 +30,8 @@ namespace VideoRemise
         FrameForward,
         FrameBackward,
         Live,
+        Escape,
+        ReTrigger,
         Speed10,
         Speed20,
         Speed30,
@@ -68,6 +70,7 @@ namespace VideoRemise
         private bool isRecording = false;
         private bool showingLive = true;
         private bool playing = false;
+        private bool escaped = false;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
@@ -224,6 +227,12 @@ namespace VideoRemise
                 case PlaybackEvent.Live:
                     Live();
                     break;
+                case PlaybackEvent.Escape:
+                    Escape();
+                    break;
+                case PlaybackEvent.ReTrigger:
+                    ReTrigger();
+                    break;
                 case PlaybackEvent.Speed10:
                     SetSpeed(.1);
                     break;
@@ -255,6 +264,33 @@ namespace VideoRemise
                     SetSpeed(1);
                     break;
             }
+        }
+
+        private async void ReTrigger()
+        {
+            if (!escaped)
+            {
+                return;
+            }
+
+            mediaPlayerElement.MediaPlayer.Pause();
+            var phrase = actions.ElementAt(currentReplay);;
+            actions.RemoveAt(currentReplay);
+            var splitTime = mediaPlayerElement.MediaPlayer.PlaybackSession.Position;
+            var (phrase1, phrase2) = await phrase.SplitMP4File(splitTime);
+
+            actions.Insert(currentReplay, phrase2);
+            actions.Insert(currentReplay, phrase1);
+
+            StartPlayback();
+        }
+
+        private void Escape()
+        {
+            escaped = true;
+            mediaPlayerElement.MediaPlayer.Pause();
+            mediaPlayerElement.MediaPlayer.PlaybackSession.Position = TimeSpan.Zero;
+            mediaPlayerElement.MediaPlayer.Play();
         }
 
         internal void PlayPause()
@@ -366,19 +402,20 @@ namespace VideoRemise
             mediaPlayerElement.Visibility = Visibility.Visible;
             showingLive = false;
             playing = true;
+            escaped = false;
 
             var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
             mediaPlayerElement.Source = source;
             mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
             {
-                var start = sender.PlaybackSession.NaturalDuration - length;
+                var start = escaped ? TimeSpan.Zero : sender.PlaybackSession.NaturalDuration - length;
                 sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
             mediaPlayerElement.MediaPlayer.MediaEnded += (MediaPlayer sender, object args) =>
             {
                 sender.Pause();
-                var start = sender.PlaybackSession.NaturalDuration - length;
+                var start = escaped ? TimeSpan.Zero : sender.PlaybackSession.NaturalDuration - length;
                 sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
