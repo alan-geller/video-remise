@@ -1,0 +1,59 @@
+﻿<Page
+    x:Class="VideoRemise.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Orientation="Vertical">
+        <CommandBar x:Name="CommandBar">
+            <AppBarButton Icon="People" Label="Match Setup" Click="OnSetupMatch"/>
+            <AppBarButton x:Name="StartBtn" Icon="Camera" Label="Start Match" Click="OnStartMatch"/>
+            <AppBarButton x:Name="StopBtn" Icon="Stop" Label="Stop Recording" Click="OnStopRecording"/>
+            <AppBarButton x:Name="PlayBtn" Icon="Play" Label="Play" Click="OnPlay"/>
+            <AppBarButton x:Name="TriggerBtn" Icon="Flag" Label="Trigger" Click="OnTrigger"/>
+            <!--<AppBarButton x:Name="PauseBtn" Icon="Pause" Label="Pause" Click="OnTogglePauseRecording"/>-->
+            <AppBarButton x:Name="DeviceCfgBtn" Icon="Setting" Label="Settings" Click="OnDeviceConfig"/>
+            <CommandBar.Content>
+                <TextBlock Text="Stopped" FontSize="20" FontWeight="Bold" Margin="5,0,0,0"/>
+            </CommandBar.Content>
+        </CommandBar>
+        <TextBlock x:Name="matchInfo" Text="Set up match" FontSize="20" FontWeight="Bold" Margin="5,10,0,10"/>
+        <Canvas x:Name="VideoCanvas" Visibility="Visible">
+            <StackPanel Orientation="Horizontal" Height="50" Canvas.Left="0" Canvas.Top="0"
+                        Canvas.ZIndex="1">
+                <!--<Rectangle x:Name="leftLight" Width="200" Fill="Red" Opacity="0"/>-->
+                <!--<Rectangle x:Name="lightSpacer" MinWidth="100" />-->
+                <!--<Rectangle x:Name="rightLight" Width="200" Fill="Green" Opacity="0"/>-->
+            </StackPanel>
+            <Grid x:Name="LayoutGrid" Canvas.Left="0" Canvas.Top="0"
+                        Canvas.ZIndex="0" x:FieldModifier="internal">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+            </Grid>
+        </Canvas>
+        <ContentDialog x:Name="MatchSetupDialog" PrimaryButtonText="OK"
+                       CloseButtonText="Cancel" IsPrimaryButtonEnabled="True"
+                       Title="Match Setup">
+            <StackPanel Orientation="Vertical">
+                <StackPanel x:Name="matchSetupPanel" Orientation="Horizontal" Margin="5,5,5,5">
+                    <RadioButton x:Name="epeeBtn" FontSize="18" Content="Epee"/>
+                    <RadioButton x:Name="foilBtn" FontSize="18" Content="Foil"/>
+                    <RadioButton x:Name="saberBtn" FontSize="18" Content="Saber"/>
+                </StackPanel>
+                <TextBox x:Name="leftFencer" FontSize="18" Margin="5,0,0,5" 
+                        PlaceholderText="Enter left fencer here" Width="400"/>
+                <TextBlock Text="vs." FontSize="18" HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+                <TextBox x:Name="rightFencer" FontSize="18" Margin="5,0,0,5" 
+                        PlaceholderText="Enter right fencer here" Width="400"/>
+            </StackPanel>
+        </ContentDialog>
+    </StackPanel>
+</Page>
