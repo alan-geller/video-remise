@@ -12,9 +12,9 @@ namespace VideoRemise
 {
     internal class PhraseRecording
     {
-        StorageFile file;
-        TimeSpan replayLength;
-        TriggerType triggerEvent;
+        private StorageFile file;
+        private TimeSpan replayLength;
+        private TriggerType triggerEvent;
 
         public PhraseRecording(StorageFile _file, int _seconds, TriggerType _triggerEvent)
         {
