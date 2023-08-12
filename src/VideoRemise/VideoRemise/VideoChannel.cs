@@ -368,7 +368,6 @@ namespace VideoRemise
             mainPage.CurrentMode = Mode.Replaying;
 
             var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
-            mediaPlayerElement.Source = source;
             mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
             {
                 var start = sender.PlaybackSession.NaturalDuration - length;
@@ -382,6 +381,7 @@ namespace VideoRemise
                 sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
+            mediaPlayerElement.Source = source;
         }
 
         internal void StartPlayback()
