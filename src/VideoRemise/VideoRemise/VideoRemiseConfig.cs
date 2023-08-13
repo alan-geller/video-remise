@@ -20,9 +20,12 @@ namespace VideoRemise
         public string TriggerProtocol { get; set; }
         public bool ManualTriggerEnabled { get; set; } = true;
 
-        public int[] ReplayMillisBeforeTrigger { get; } = { 6000, 6000, 6000 };
-        public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
-        public int ActionContinuationMillis { get; set; } = 1500;
+        public TimeSpan[] ReplayDurationBeforeTrigger { get; } = 
+            { TimeSpan.FromSeconds(6.0), TimeSpan.FromSeconds(6.0), TimeSpan.FromSeconds(6.0) };
+        public TimeSpan[] ReplayDurationAfterTrigger { get; } = 
+            { TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(2.0) };
+        public TimeSpan ActionContinuationDuration { get; set; } = 
+            TimeSpan.FromSeconds(1.5);
 
         public Color RedLightColor { get; set; } = Colors.Red;
         public Color GreenLightColor { get; set; }  = Colors.Green;
@@ -67,8 +70,10 @@ namespace VideoRemise
                 ApplicationDataCreateDisposition.Always);
             for (i = 0; i < 3; i++)
             {
-                timingSettings.Values[$"PreTrigger{i}"] = ReplayMillisBeforeTrigger[i];
-                timingSettings.Values[$"PostTrigger{i}"] = ReplayMillisAfterTrigger[i];
+                timingSettings.Values[$"PreTrigger{i}"] = 
+                    ReplayDurationBeforeTrigger[i].TotalSeconds;
+                timingSettings.Values[$"PostTrigger{i}"] = 
+                    ReplayDurationAfterTrigger[i].TotalSeconds;
             }
 
             // Color settings
@@ -135,8 +140,10 @@ namespace VideoRemise
                     ApplicationDataCreateDisposition.Existing);
                 for (int i = 0; i < 3; i++)
                 {
-                    config.ReplayMillisBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
-                    config.ReplayMillisAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
+                    config.ReplayDurationBeforeTrigger[i] = 
+                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PreTrigger{i}"]);
+                    config.ReplayDurationAfterTrigger[i] = 
+                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PostTrigger{i}"]);
                 }
             }
             catch (Exception)

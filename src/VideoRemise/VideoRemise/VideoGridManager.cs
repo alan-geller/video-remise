@@ -8,11 +8,11 @@ using System.Diagnostics;
 
 namespace VideoRemise
 {
-    internal struct ReplaySegment
-    {
-        public TimeSpan start;
-        public TimeSpan end;
-    }
+    //internal struct ReplaySegment
+    //{
+    //    public TimeSpan start;
+    //    public TimeSpan end;
+    //}
 
     internal class VideoGridManager
     {
@@ -22,12 +22,12 @@ namespace VideoRemise
         private List<VideoChannel> channels;
         private bool zoomed = false;
         private Stopwatch streamStopwatch = new Stopwatch();
-        private TimeSpan replayStart;
-        private TimeSpan replayEnd;
-        private List<ReplaySegment> replays = new List<ReplaySegment>();
+        //private TimeSpan replayStart;
+        //private TimeSpan replayEnd;
+        //private List<ReplaySegment> replays = new List<ReplaySegment>();
         private bool replayRecording = false;
-        private int replayMillisBeforeTrigger;
-        private int replayMillisAfterTrigger;
+        private TimeSpan replayDurationBeforeTrigger;
+        private TimeSpan replayDurationAfterTrigger;
 
         public int ChannelCount => channels.Count;
 
@@ -112,8 +112,8 @@ namespace VideoRemise
 
         internal async Task StartRecording(string fileName)
         {
-            replayMillisBeforeTrigger = config.ReplayMillisBeforeTrigger[mainPage.CurrentWeapon];
-            replayMillisAfterTrigger = config.ReplayMillisAfterTrigger[mainPage.CurrentWeapon];
+            replayDurationBeforeTrigger = config.ReplayDurationBeforeTrigger[mainPage.CurrentWeapon];
+            replayDurationAfterTrigger = config.ReplayDurationAfterTrigger[mainPage.CurrentWeapon];
             //List<Task> done = new List<Task>();
             foreach (var channel in channels)
             {
@@ -161,10 +161,11 @@ namespace VideoRemise
 
         internal async void OnHalt(TriggerType triggerType)
         {
-            await Task.Delay(replayMillisAfterTrigger * 1000);
+            await Task.Delay(replayDurationAfterTrigger);
             foreach (var channel in channels)
             {
-                channel.Trigger(TimeSpan.FromSeconds(replayMillisBeforeTrigger + replayMillisAfterTrigger), triggerType);
+                channel.Trigger(replayDurationBeforeTrigger + replayDurationAfterTrigger, 
+                    triggerType);
             }
             mainPage.CurrentMode = Mode.Replaying;
             mainPage.SetStatus();
@@ -181,9 +182,9 @@ namespace VideoRemise
                 /*
                 if (!replayRecording)
                 {
-                    replayStart = streamStopwatch.Elapsed - TimeSpan.FromMilliseconds(replayMillisBeforeTrigger);
+                    replayStart = streamStopwatch.Elapsed - replayMillisBeforeTrigger;
                 }
-                replayEnd = streamStopwatch.Elapsed + TimeSpan.FromMilliseconds(replayMillisAfterTrigger);*/
+                replayEnd = streamStopwatch.Elapsed + replayMillisAfterTrigger;*/
                 TriggerType tt = (TriggerType)args.LightsOn;
                 OnHalt(tt);
             }

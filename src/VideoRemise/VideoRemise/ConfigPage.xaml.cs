@@ -91,12 +91,12 @@ namespace VideoRemise
                     break;
             }
 
-            epeePre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee].ToString();
-            epeePost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee].ToString();
-            foilPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil].ToString();
-            foilPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil].ToString();
-            saberPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber].ToString();
-            saberPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber].ToString();
+            epeePre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Epee].TotalSeconds.ToString();
+            epeePost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Epee].TotalSeconds.ToString();
+            foilPre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Foil].TotalSeconds.ToString();
+            foilPost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Foil].TotalSeconds.ToString();
+            saberPre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Saber].TotalSeconds.ToString();
+            saberPost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Saber].TotalSeconds.ToString();
 
             redColor.Color = config.RedLightColor;
             greenColor.Color = config.GreenLightColor;
@@ -252,18 +252,18 @@ namespace VideoRemise
             }
             config.VideoSources = newSources;
 
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee] = 
-                int.Parse(SameOrDefault(epeePre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee] = 
-                int.Parse(SameOrDefault(epeePost.Text, "0"));
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil] = 
-                int.Parse(SameOrDefault(foilPre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil] = 
-                int.Parse(SameOrDefault(foilPost.Text, "0"));
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber] = 
-                int.Parse(SameOrDefault(saberPre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber] = 
-                int.Parse(SameOrDefault(saberPost.Text, "0"));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Epee] = 
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(epeePre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Epee] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(epeePost.Text, "0")));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Foil] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(foilPre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Foil] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(foilPost.Text, "0")));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Saber] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(saberPre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Saber] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(saberPost.Text, "0")));
 
             config.RedLightColor = redColor.Color;
             config.GreenLightColor = greenColor.Color;

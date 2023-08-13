@@ -70,8 +70,7 @@ namespace VideoRemise
                 var config = (Application.Current as App).Config;
 
                 var last = History[History.Count - 1];
-                if (last.BaseTime + TimeSpan.FromMilliseconds(config.ActionContinuationMillis)
-                    > when)
+                if (last.BaseTime + config.ActionContinuationDuration > when)
                 {
                     UpdateCurrentEvent(last);
                     return false;
