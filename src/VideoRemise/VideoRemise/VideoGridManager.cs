@@ -25,7 +25,7 @@ namespace VideoRemise
         //private TimeSpan replayStart;
         //private TimeSpan replayEnd;
         //private List<ReplaySegment> replays = new List<ReplaySegment>();
-        private bool replayRecording = false;
+        //private bool replayRecording = false;
         private TimeSpan replayDurationBeforeTrigger;
         private TimeSpan replayDurationAfterTrigger;
 
