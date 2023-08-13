@@ -276,10 +276,12 @@ namespace LightDisplayVisualEffect
                 else if (property.Key == RedLightColorProperty)
                 {
                     redLightColor = (Color)property.Value;
+                    redLightARGB = ColorToARGBuint(redLightColor);
                 }
                 else if (property.Key == GreenLightColorProperty)
                 {
                     greenLightColor = (Color)property.Value;
+                    greenLightARGB = ColorToARGBuint(greenLightColor);
                 }
             }
         }

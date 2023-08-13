@@ -368,6 +368,11 @@ namespace VideoRemise
             mainPage.CurrentMode = Mode.Replaying;
 
             var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
+            // This has to come before the two event additions because otherwise there's
+            // an odd runtime error adding the event hadler that "this" is null in the 
+            // handler delegate. Maybe the MediaPlayer element doesn't get initialized
+            // until the source is set?
+            mediaPlayerElement.Source = source;
             mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
             {
                 var start = sender.PlaybackSession.NaturalDuration - length;
@@ -381,7 +386,6 @@ namespace VideoRemise
                 sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
                 sender.Play();
             };
-            mediaPlayerElement.Source = source;
         }
 
         internal void StartPlayback()

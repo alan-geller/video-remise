@@ -35,14 +35,13 @@ namespace VideoRemise
         {
             mainPage = mp;
             grid = mp.LayoutGrid;
+            config = (Application.Current as App).Config;
 
             channels = new List<VideoChannel>();
         }
 
         internal async Task UpdateGridAsync()
         {
-            config = (Application.Current as App).Config;
-
             foreach (var channel in channels)
             {
                 await channel.ShutdownAsync();
@@ -187,6 +186,18 @@ namespace VideoRemise
                 replayEnd = streamStopwatch.Elapsed + TimeSpan.FromMilliseconds(replayMillisAfterTrigger);*/
                 TriggerType tt = (TriggerType)args.LightsOn;
                 OnHalt(tt);
+            }
+        }
+
+        public void UpdateLightColors()
+        {
+            foreach (var channel in channels)
+            {
+                channel.SetProperty(LightDisplayEffect.RedLightColorProperty,
+                    config.RedLightColor);
+                channel.SetProperty(LightDisplayEffect.GreenLightColorProperty,
+                    config.GreenLightColor);
+                channel.SetProperty(LightDisplayEffect.LightStatusProperty, Lights.None);
             }
         }
     }

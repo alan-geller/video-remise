@@ -9,6 +9,7 @@ using Windows.Devices.Enumeration;
 using Windows.Devices.Usb;
 using System.Threading.Tasks;
 using Windows.Devices.SerialCommunication;
+using System.Text.RegularExpressions;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -96,6 +97,9 @@ namespace VideoRemise
             foilPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil].ToString();
             saberPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber].ToString();
             saberPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber].ToString();
+
+            redColor.Color = config.RedLightColor;
+            greenColor.Color = config.GreenLightColor;
         }
 
         private async Task PopulateAdapterList()
@@ -261,22 +265,39 @@ namespace VideoRemise
             config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber] = 
                 int.Parse(SameOrDefault(saberPost.Text, "0"));
 
+            config.RedLightColor = redColor.Color;
+            config.GreenLightColor = greenColor.Color;
+
             config.Save();
+            (Application.Current as App).Config = config;
 
             Frame.Navigate(typeof(MainPage), camerasChanged);
         }
 
         private void OnCancel(object sender, RoutedEventArgs e)
         {
-            var config = (Application.Current as App).Config;
+            //var config = (Application.Current as App).Config;
             Frame.Navigate(typeof(MainPage), false);
         }
 
+        // Make sure that the current text is a valid decimal number
+        // It should be a (possibly empty) string of digits, then an optional period,
+        // then another possibly empty series of digits.
         private void VerifyDigitEntry(object sender, TextBoxBeforeTextChangingEventArgs e)
         {
-            if (!e.NewText.All(char.IsDigit))
+            if (e.NewText.Length > 0)
             {
-                e.Cancel = true;
+                int n = e.NewText.IndexOf('.');
+                if (n == -1)
+                {
+                    e.Cancel = !e.NewText.All(char.IsDigit);
+                }
+                else
+                {
+                    var pre = e.NewText.Substring(0, n);
+                    var post = e.NewText.Substring(n + 1);
+                    e.Cancel = !pre.All(char.IsDigit) || !post.All(char.IsDigit);
+                }
             }
         }
     }

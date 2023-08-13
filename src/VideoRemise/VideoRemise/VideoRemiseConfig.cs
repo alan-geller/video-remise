@@ -39,6 +39,14 @@ namespace VideoRemise
 
         public void Save()
         {
+            void SaveColor(ApplicationDataContainer container, Color color, string name)
+            {
+                container.Values[name + ".A"] = color.A;
+                container.Values[name + ".R"] = color.R;
+                container.Values[name + ".G"] = color.G;
+                container.Values[name + ".B"] = color.B;
+            }
+
             var appSettings = ApplicationData.Current.LocalSettings;
 
             // Device settings
@@ -62,6 +70,12 @@ namespace VideoRemise
                 timingSettings.Values[$"PreTrigger{i}"] = ReplayMillisBeforeTrigger[i];
                 timingSettings.Values[$"PostTrigger{i}"] = ReplayMillisAfterTrigger[i];
             }
+
+            // Color settings
+            var colorSettings = appSettings.CreateContainer("Colors", 
+                ApplicationDataCreateDisposition.Always);
+            SaveColor(colorSettings, RedLightColor, "RedLight");
+            SaveColor(colorSettings, GreenLightColor, "GreenLight");
         }
 
         public void ToFile(string filePath)
@@ -73,6 +87,22 @@ namespace VideoRemise
 
         public static VideoRemiseConfig Load()
         {
+            Color LoadColor(ApplicationDataContainer container, string name, Color def)
+            {
+                Color color = def;
+                if (container.Values.ContainsKey(name + ".A") &&
+                    container.Values.ContainsKey(name + ".R") &&
+                    container.Values.ContainsKey(name + ".G") &&
+                    container.Values.ContainsKey(name + ".B"))
+                {
+                    color.A = (byte)container.Values[name + ".A"];
+                    color.R = (byte)container.Values[name + ".R"];
+                    color.G = (byte)container.Values[name + ".G"];
+                    color.B = (byte)container.Values[name + ".B"];
+                }
+                return color;
+            }
+
             var config = new VideoRemiseConfig();
             var appSettings = ApplicationData.Current.LocalSettings;
 
@@ -108,6 +138,19 @@ namespace VideoRemise
                     config.ReplayMillisBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
                     config.ReplayMillisAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
                 }
+            }
+            catch (Exception)
+            {
+                // Ignore this
+            }
+
+            try
+            {
+                // Throws if the container doesn't exist
+                var colorSettings = appSettings.CreateContainer("Colors",
+                    ApplicationDataCreateDisposition.Existing);
+                config.RedLightColor = LoadColor(colorSettings, "RedLight", Colors.Red);
+                config.GreenLightColor = LoadColor(colorSettings, "GreenLight", Colors.Green);
             }
             catch (Exception)
             {
