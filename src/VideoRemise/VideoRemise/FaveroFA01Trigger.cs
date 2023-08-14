@@ -56,7 +56,7 @@ namespace VideoRemise
                     var readByte = reader.ReadByte();
                     if (readByte == StartOfFrame)
                     {
-                        await FileIO.AppendTextAsync(logFile, $"Found start of frame, 0x{StartOfFrame:x2}");
+                        await FileIO.AppendTextAsync(logFile, $"Found start of frame, 0x{StartOfFrame:x2}\n");
                         position++;
                         return reader.UnconsumedBufferLength > 0;
                     }
@@ -77,7 +77,7 @@ namespace VideoRemise
 
             var currentByte = reader.ReadByte();
             position++;
-            await FileIO.AppendTextAsync(logFile, $"Read 0x{currentByte:x2} at offset {position}");
+            await FileIO.AppendTextAsync(logFile, $"Read 0x{currentByte:x2} at offset {position}\n");
 
             // We ignore all the other bytes; this could mean that we accept a frame
             // with a bad checksum, but we don't know the checksum algorithm (yet).
@@ -89,7 +89,7 @@ namespace VideoRemise
             if (position >= readFrameLength)
             {
                 FireLightEvent(lightStatus);
-                await FileIO.AppendTextAsync(logFile, $"Completed frame with light data 0x{lightStatus:b8}");
+                await FileIO.AppendTextAsync(logFile, $"Completed frame with light data 0x{lightStatus:b8}\n");
                 position = 0;
             }
         }
