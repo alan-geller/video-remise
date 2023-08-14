@@ -40,29 +40,29 @@
                 <Paragraph Margin="20,0,0,0">
                     <InlineUIContainer>
                         <SymbolIcon Symbol="People"/>
-                    </InlineUIContainer> displays the match setup dialog, which allows you to enter the fencers' names.
+                    </InlineUIContainer> (Match Setup) displays the match setup dialog, which allows you to enter the fencers' names.
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
                     <InlineUIContainer>
                         <SymbolIcon Symbol="Camera"/>
-                    </InlineUIContainer> starts recording the current match.
+                    </InlineUIContainer> (Start Match) starts recording the current match.
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
                     <InlineUIContainer>
                         <SymbolIcon Symbol="Stop"/>
-                    </InlineUIContainer> stops recording the current match and saves the video recordings if a match
+                    </InlineUIContainer> (Stop Match) stops recording the current match and saves the video recordings if a match
                 had been set up.
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
                     <InlineUIContainer>
                         <SymbolIcon Symbol="Setting"/>
-                    </InlineUIContainer> brings up the Settings page, which allows you to select camera devices and
+                    </InlineUIContainer> (Settings) brings up the Settings page, which allows you to select camera devices and
                 configure your scoring machine.
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
                     <InlineUIContainer>
                         <SymbolIcon Symbol="Help"/>
-                    </InlineUIContainer> displays this help screen.
+                    </InlineUIContainer> (Help) displays this help screen.
                 </Paragraph>
                 <Paragraph FontSize="18" FontWeight="Bold" Margin="0,5,0,0">Basic Flow</Paragraph>
                 <Paragraph>
@@ -70,7 +70,7 @@
                 each camera on the main video display. No video is recorded.
                 </Paragraph>
                 <Paragraph Margin="0,5,0,0">
-                    When you start a match using the Start command bar button,
+                    When you start a match using the Start Match command bar button,
                     <InlineUIContainer>
                         <SymbolIcon Symbol="Camera"/>
                     </InlineUIContainer> ,
@@ -93,7 +93,7 @@
                     In Recording or Replaying mode, the following keys may be used to trigger the system:
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
-                    <Bold>Return</Bold> signals a Halt with no lights; for instance, the referee has called Halt
+                    <Bold>Enter</Bold> signals a Halt with no lights; for instance, the referee has called Halt
                 because a fencer has left the strip.
                 </Paragraph>
                 <Paragraph Margin="20,0,0,0">
