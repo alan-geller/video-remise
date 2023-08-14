@@ -20,9 +20,12 @@ namespace VideoRemise
         public string TriggerProtocol { get; set; }
         public bool ManualTriggerEnabled { get; set; } = true;
 
-        public int[] ReplayMillisBeforeTrigger { get; } = { 6000, 6000, 6000 };
-        public int[] ReplayMillisAfterTrigger { get; } = { 2000, 2000, 2000 };
-        public int ActionContinuationMillis { get; set; } = 1500;
+        public TimeSpan[] ReplayDurationBeforeTrigger { get; } = 
+            { TimeSpan.FromSeconds(6.0), TimeSpan.FromSeconds(6.0), TimeSpan.FromSeconds(6.0) };
+        public TimeSpan[] ReplayDurationAfterTrigger { get; } = 
+            { TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(2.0) };
+        public TimeSpan ActionContinuationDuration { get; set; } = 
+            TimeSpan.FromSeconds(1.5);
 
         public Color RedLightColor { get; set; } = Colors.Red;
         public Color GreenLightColor { get; set; }  = Colors.Green;
@@ -39,6 +42,14 @@ namespace VideoRemise
 
         public void Save()
         {
+            void SaveColor(ApplicationDataContainer container, Color color, string name)
+            {
+                container.Values[name + ".A"] = color.A;
+                container.Values[name + ".R"] = color.R;
+                container.Values[name + ".G"] = color.G;
+                container.Values[name + ".B"] = color.B;
+            }
+
             var appSettings = ApplicationData.Current.LocalSettings;
 
             // Device settings
@@ -59,9 +70,17 @@ namespace VideoRemise
                 ApplicationDataCreateDisposition.Always);
             for (i = 0; i < 3; i++)
             {
-                timingSettings.Values[$"PreTrigger{i}"] = ReplayMillisBeforeTrigger[i];
-                timingSettings.Values[$"PostTrigger{i}"] = ReplayMillisAfterTrigger[i];
+                timingSettings.Values[$"PreTrigger{i}"] = 
+                    ReplayDurationBeforeTrigger[i].TotalSeconds;
+                timingSettings.Values[$"PostTrigger{i}"] = 
+                    ReplayDurationAfterTrigger[i].TotalSeconds;
             }
+
+            // Color settings
+            var colorSettings = appSettings.CreateContainer("Colors", 
+                ApplicationDataCreateDisposition.Always);
+            SaveColor(colorSettings, RedLightColor, "RedLight");
+            SaveColor(colorSettings, GreenLightColor, "GreenLight");
         }
 
         public void ToFile(string filePath)
@@ -73,6 +92,22 @@ namespace VideoRemise
 
         public static VideoRemiseConfig Load()
         {
+            Color LoadColor(ApplicationDataContainer container, string name, Color def)
+            {
+                Color color = def;
+                if (container.Values.ContainsKey(name + ".A") &&
+                    container.Values.ContainsKey(name + ".R") &&
+                    container.Values.ContainsKey(name + ".G") &&
+                    container.Values.ContainsKey(name + ".B"))
+                {
+                    color.A = (byte)container.Values[name + ".A"];
+                    color.R = (byte)container.Values[name + ".R"];
+                    color.G = (byte)container.Values[name + ".G"];
+                    color.B = (byte)container.Values[name + ".B"];
+                }
+                return color;
+            }
+
             var config = new VideoRemiseConfig();
             var appSettings = ApplicationData.Current.LocalSettings;
 
@@ -105,9 +140,24 @@ namespace VideoRemise
                     ApplicationDataCreateDisposition.Existing);
                 for (int i = 0; i < 3; i++)
                 {
-                    config.ReplayMillisBeforeTrigger[i] = (int)timingSettings.Values[$"PreTrigger{i}"];
-                    config.ReplayMillisAfterTrigger[i] = (int)timingSettings.Values[$"PostTrigger{i}"];
+                    config.ReplayDurationBeforeTrigger[i] = 
+                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PreTrigger{i}"]);
+                    config.ReplayDurationAfterTrigger[i] = 
+                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PostTrigger{i}"]);
                 }
+            }
+            catch (Exception)
+            {
+                // Ignore this
+            }
+
+            try
+            {
+                // Throws if the container doesn't exist
+                var colorSettings = appSettings.CreateContainer("Colors",
+                    ApplicationDataCreateDisposition.Existing);
+                config.RedLightColor = LoadColor(colorSettings, "RedLight", Colors.Red);
+                config.GreenLightColor = LoadColor(colorSettings, "GreenLight", Colors.Green);
             }
             catch (Exception)
             {

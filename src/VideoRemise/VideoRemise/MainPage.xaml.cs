@@ -19,6 +19,7 @@ namespace VideoRemise
         public int CurrentWeapon { get; set; }
         public Mode CurrentMode { get; set; }
         public bool Playing { get; set; }
+        public bool Active { get; set; }
 
 
         private VideoRemiseConfig config;
@@ -48,11 +49,14 @@ namespace VideoRemise
                     e.Handled = true;
                 }
             };
+            Active = false;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            Active = true;
 
             config = (Application.Current as App).Config;
 
@@ -72,19 +76,28 @@ namespace VideoRemise
 
             Frame.SizeChanged += HandleResize;
 
-            if ((bool)e.Parameter)
-            {
+            //if ((bool)e.Parameter)
+            //{
                 await gridManager.UpdateGridAsync();
-            }
+            //}
 
             UpdateMatchInfo();
 
             AdjustVideoWidths(Frame.ActualWidth);
 
+            gridManager.UpdateLightColors();
+
             Playing = false;
             CurrentMode = Mode.Idle;
 
             SetStatus();
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+
+            Active = false;
         }
 
         private void AdjustVideoWidths(double frameWidth)
@@ -158,65 +171,68 @@ namespace VideoRemise
 
         public void OnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            switch (e.VirtualKey)
+            if (Active)
             {
-                case VirtualKey.PageDown:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
-                    break;
-                case VirtualKey.PageUp:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
-                    break;
-                case VirtualKey.Space:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
-                    break;
-                case VirtualKey.Left:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameBackward);
-                    break;
-                case VirtualKey.Right:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
-                    break;
-                case VirtualKey.Enter:
-                    gridManager.OnHalt(TriggerType.Halt);
-                    break;
-                case VirtualKey.Home:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Live);
-                    SetStatus();
-                    break;
-                case VirtualKey.Number0:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed100);
-                    break;
-                case VirtualKey.Number1:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed10);
-                    break;
-                case VirtualKey.Number2:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed20);
-                    break;
-                case VirtualKey.Number3:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed30);
-                    break;
-                case VirtualKey.Number4:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed40);
-                    break;
-                case VirtualKey.Number5:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed50);
-                    break;
-                case VirtualKey.Number6:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed60);
-                    break;
-                case VirtualKey.Number7:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed70);
-                    break;
-                case VirtualKey.Number8:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed80);
-                    break;
-                case VirtualKey.Number9:
-                    gridManager.OnPlaybackEvent(PlaybackEvent.Speed90);
-                    break;
-                default:
-                    break;
-            }
+                switch (e.VirtualKey)
+                {
+                    case VirtualKey.PageDown:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
+                        break;
+                    case VirtualKey.PageUp:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
+                        break;
+                    case VirtualKey.Space:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
+                        break;
+                    case VirtualKey.Left:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.FrameBackward);
+                        break;
+                    case VirtualKey.Right:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.FrameForward);
+                        break;
+                    case VirtualKey.Enter:
+                        gridManager.OnHalt(TriggerType.Halt);
+                        break;
+                    case VirtualKey.Home:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Live);
+                        SetStatus();
+                        break;
+                    case VirtualKey.Number0:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed100);
+                        break;
+                    case VirtualKey.Number1:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed10);
+                        break;
+                    case VirtualKey.Number2:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed20);
+                        break;
+                    case VirtualKey.Number3:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed30);
+                        break;
+                    case VirtualKey.Number4:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed40);
+                        break;
+                    case VirtualKey.Number5:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed50);
+                        break;
+                    case VirtualKey.Number6:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed60);
+                        break;
+                    case VirtualKey.Number7:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed70);
+                        break;
+                    case VirtualKey.Number8:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed80);
+                        break;
+                    case VirtualKey.Number9:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Speed90);
+                        break;
+                    default:
+                        break;
+                }
 
-            SetStatus();
+                SetStatus();
+            }
         }
 
         //private void OnTogglePauseRecording(object sender, RoutedEventArgs e)
@@ -293,7 +309,9 @@ namespace VideoRemise
 
         private async void OnSetupMatch(object sender, RoutedEventArgs e)
         {
+            Active = false;
             var result = await MatchSetupDialog.ShowAsync();
+            Active = true;
             if (result == ContentDialogResult.Primary)
             {
                 if (epeeBtn.IsChecked ?? false)

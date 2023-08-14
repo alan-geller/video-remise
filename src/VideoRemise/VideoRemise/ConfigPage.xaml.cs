@@ -9,6 +9,7 @@ using Windows.Devices.Enumeration;
 using Windows.Devices.Usb;
 using System.Threading.Tasks;
 using Windows.Devices.SerialCommunication;
+using System.Text.RegularExpressions;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -90,12 +91,15 @@ namespace VideoRemise
                     break;
             }
 
-            epeePre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee].ToString();
-            epeePost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee].ToString();
-            foilPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil].ToString();
-            foilPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil].ToString();
-            saberPre.Text = config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber].ToString();
-            saberPost.Text = config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber].ToString();
+            epeePre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Epee].TotalSeconds.ToString();
+            epeePost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Epee].TotalSeconds.ToString();
+            foilPre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Foil].TotalSeconds.ToString();
+            foilPost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Foil].TotalSeconds.ToString();
+            saberPre.Text = config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Saber].TotalSeconds.ToString();
+            saberPost.Text = config.ReplayDurationAfterTrigger[VideoRemiseConfig.Saber].TotalSeconds.ToString();
+
+            redColor.Color = config.RedLightColor;
+            greenColor.Color = config.GreenLightColor;
         }
 
         private async Task PopulateAdapterList()
@@ -248,35 +252,52 @@ namespace VideoRemise
             }
             config.VideoSources = newSources;
 
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Epee] = 
-                int.Parse(SameOrDefault(epeePre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Epee] = 
-                int.Parse(SameOrDefault(epeePost.Text, "0"));
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Foil] = 
-                int.Parse(SameOrDefault(foilPre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Foil] = 
-                int.Parse(SameOrDefault(foilPost.Text, "0"));
-            config.ReplayMillisBeforeTrigger[VideoRemiseConfig.Saber] = 
-                int.Parse(SameOrDefault(saberPre.Text, "0"));
-            config.ReplayMillisAfterTrigger[VideoRemiseConfig.Saber] = 
-                int.Parse(SameOrDefault(saberPost.Text, "0"));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Epee] = 
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(epeePre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Epee] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(epeePost.Text, "0")));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Foil] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(foilPre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Foil] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(foilPost.Text, "0")));
+            config.ReplayDurationBeforeTrigger[VideoRemiseConfig.Saber] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(saberPre.Text, "0")));
+            config.ReplayDurationAfterTrigger[VideoRemiseConfig.Saber] =
+                TimeSpan.FromSeconds(double.Parse(SameOrDefault(saberPost.Text, "0")));
+
+            config.RedLightColor = redColor.Color;
+            config.GreenLightColor = greenColor.Color;
 
             config.Save();
+            (Application.Current as App).Config = config;
 
             Frame.Navigate(typeof(MainPage), camerasChanged);
         }
 
         private void OnCancel(object sender, RoutedEventArgs e)
         {
-            var config = (Application.Current as App).Config;
+            //var config = (Application.Current as App).Config;
             Frame.Navigate(typeof(MainPage), false);
         }
 
+        // Make sure that the current text is a valid decimal number
+        // It should be a (possibly empty) string of digits, then an optional period,
+        // then another possibly empty series of digits.
         private void VerifyDigitEntry(object sender, TextBoxBeforeTextChangingEventArgs e)
         {
-            if (!e.NewText.All(char.IsDigit))
+            if (e.NewText.Length > 0)
             {
-                e.Cancel = true;
+                int n = e.NewText.IndexOf('.');
+                if (n == -1)
+                {
+                    e.Cancel = !e.NewText.All(char.IsDigit);
+                }
+                else
+                {
+                    var pre = e.NewText.Substring(0, n);
+                    var post = e.NewText.Substring(n + 1);
+                    e.Cancel = !pre.All(char.IsDigit) || !post.All(char.IsDigit);
+                }
             }
         }
     }

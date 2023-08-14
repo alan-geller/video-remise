@@ -22,7 +22,6 @@ namespace VideoRemise
 
         private MainPage mainPage;
         private bool clockRunning = false;
-        private int pendingCount = 0;
         private const int lightsOnMillis = 1500;
         private Lights currentLights = Lights.None;
         private object timerLock = new object();
@@ -32,6 +31,7 @@ namespace VideoRemise
             mainPage = main;
             //mainPage.KeyDown += OnKeyDown;
             Window.Current.CoreWindow.KeyDown += OnKeyDown;
+            clockRunning = true;
         }
 
         private void OnKeyDown(CoreWindow sender, KeyEventArgs args)
@@ -41,60 +41,64 @@ namespace VideoRemise
                 Lights oldLights;
                 lock (timerLock)
                 {
-                    pendingCount++;
                     oldLights = currentLights;
                     currentLights |= l;
                 }
                 FireLightEvent(currentLights);
-                var data = new TimerData { ResetLights = oldLights };
+                var data = new TimerData { ResetLights = l };
                 var t = new Timer(LightsTimeout, data, lightsOnMillis, Timeout.Infinite);
                 data.ResetTimer = t;
             }
 
-            switch (args.VirtualKey)
+            if (mainPage.Active)
             {
-                case VirtualKey.Pause:
-                    if (clockRunning)
-                    {
-                        FireClockStopEvent();
-                    }
-                    else
-                    {
-                        FireClockStartEvent();
-                    }
-                    break;
-                case VirtualKey.S:
-                    HandleLights(Lights.Red);
-                    break;
-                case VirtualKey.X:
-                    HandleLights(Lights.LeftWhite);
-                    break;
-                case VirtualKey.D:
-                    HandleLights(Lights.Green);
-                    break;
-                case VirtualKey.C:
-                    HandleLights(Lights.RightWhite);
-                    break;
-                default:
-                    break;
+                switch (args.VirtualKey)
+                {
+                    case VirtualKey.Pause:
+                    case VirtualKey.Enter:
+                        if (clockRunning)
+                        {
+                            FireClockStopEvent();
+                        }
+                        else
+                        {
+                            FireClockStartEvent();
+                        }
+                        clockRunning = !clockRunning;
+                        break;
+                    case VirtualKey.S:
+                        HandleLights(Lights.Red);
+                        break;
+                    case VirtualKey.X:
+                        HandleLights(Lights.LeftWhite);
+                        break;
+                    case VirtualKey.D:
+                        HandleLights(Lights.Green);
+                        break;
+                    case VirtualKey.C:
+                        HandleLights(Lights.RightWhite);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
-        private void LightsTimeout(object d)
+        // Async void because this is actually an async event handler
+        private async void LightsTimeout(object d)
         {
             bool fire = false;
             var data = (TimerData)d;
             lock (timerLock)
             {
-                if (--pendingCount <= 0)
-                {
-                    currentLights = data.ResetLights;
-                    fire = true;
-                }
+                var newLights = currentLights ^ data.ResetLights;
+                currentLights = newLights;
+                fire = true;
             }
-            if (fire)
+            if (fire && mainPage.Active)
             {
-                FireLightEvent(data.ResetLights);
+                await mainPage.Dispatcher.RunAsync(CoreDispatcherPriority.High,
+                    () => FireLightEvent(currentLights));
             }
             data.ResetTimer?.Dispose();
         }
