@@ -63,7 +63,7 @@ namespace VideoRemise
                     var readCount = await reader.LoadAsync(readFrameLength).AsTask(cancellationToken);
                     if (readCount > 0)
                     {
-                        ProcessBuffer();
+                        await ProcessBuffer();
                     }
                 }
                 catch (OperationCanceledException)
@@ -73,7 +73,7 @@ namespace VideoRemise
             }
         }
 
-        protected abstract void ProcessBuffer();
+        protected abstract Task ProcessBuffer();
 
         public void StopReading()
         {
