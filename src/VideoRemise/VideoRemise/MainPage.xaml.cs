@@ -128,8 +128,8 @@ namespace VideoRemise
                 //rightLight.Opacity = 0.50;
 
                 //PauseBtn.IsEnabled = true;
-                PlayBtn.IsEnabled = true;
-                TriggerBtn.IsEnabled = true;
+                //PlayBtn.IsEnabled = true;
+                //TriggerBtn.IsEnabled = true;
                 CurrentMode = Mode.Recording;
                 SetStatus();
             }
@@ -149,8 +149,8 @@ namespace VideoRemise
                 await gridManager.StopRecording();
 
                 //PauseBtn.IsEnabled = false;
-                PlayBtn.IsEnabled = true;
-                TriggerBtn.IsEnabled = false;
+                //PlayBtn.IsEnabled = true;
+                //TriggerBtn.IsEnabled = false;
                 CurrentMode = Mode.Idle;
                 SetStatus();
             }
@@ -287,10 +287,9 @@ namespace VideoRemise
             }
         }
 
-        private void OnDeviceConfig(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(ConfigPage));
-        }
+        private void OnDeviceConfig(object sender, RoutedEventArgs e) => _ = Frame.Navigate(typeof(ConfigPage));
+
+        private void OnHelp(object sender, RoutedEventArgs e) => _ = Frame.Navigate(typeof(HelpPage));
 
         private async void OnSetupMatch(object sender, RoutedEventArgs e)
         {
