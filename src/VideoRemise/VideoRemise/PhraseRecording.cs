@@ -15,6 +15,7 @@ namespace VideoRemise
         private StorageFile file;
         private TimeSpan replayLength;
         private TriggerType triggerEvent;
+        internal bool Tag { get; set; }
 
         public PhraseRecording(StorageFile _file, TimeSpan _seconds, TriggerType _triggerEvent)
         {

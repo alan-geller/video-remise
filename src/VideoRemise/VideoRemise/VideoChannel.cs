@@ -30,6 +30,9 @@ namespace VideoRemise
         FrameForward,
         FrameBackward,
         Live,
+        ForwardTag,
+        BackwardTag,
+        Tag,
         Speed10,
         Speed20,
         Speed30,
@@ -224,6 +227,15 @@ namespace VideoRemise
                 case PlaybackEvent.Live:
                     Live();
                     break;
+                case PlaybackEvent.ForwardTag:
+                    ForwardTag();
+                    break;
+                case PlaybackEvent.BackwardTag:
+                    BackwardTag();
+                    break;
+                case PlaybackEvent.Tag:
+                    Tag();
+                    break;
                 case PlaybackEvent.Speed10:
                     SetSpeed(.1);
                     break;
@@ -308,6 +320,42 @@ namespace VideoRemise
             showingLive = true;
             playing = false;
             mainPage.CurrentMode = Mode.Recording;
+        }
+
+        internal async void BackwardTag()
+        {
+            for (var i = currentReplay - 1; i >= 0; i--)
+            {
+                if (actions.ElementAt(i).Tag)
+                {
+                    currentReplay = i;
+                    PlayFromFile();
+                    return;
+                }
+            }
+
+            await (new MessageDialog("No more tagged videos before this one")).ShowAsync();
+        }
+
+        internal async void ForwardTag()
+        {
+            for (var i = currentReplay + 1; i < actions.Count; i++)
+            {
+                if (actions.ElementAt(i).Tag)
+                {
+                    currentReplay = i;
+                    PlayFromFile();
+                    return;
+                }
+            }
+
+            await (new MessageDialog("No more tagged videos after this one")).ShowAsync();
+        }
+
+        internal void Tag()
+        {
+            var phrase = actions.ElementAt(currentReplay);
+            phrase.Tag = true;
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
