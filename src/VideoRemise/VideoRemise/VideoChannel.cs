@@ -33,6 +33,8 @@ namespace VideoRemise
         ForwardTag,
         BackwardTag,
         Tag,
+        Escape,
+        ReTrigger,
         Speed10,
         Speed20,
         Speed30,
@@ -71,6 +73,7 @@ namespace VideoRemise
         private bool isRecording = false;
         private bool showingLive = true;
         private bool playing = false;
+        private bool escaped = false;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
@@ -235,6 +238,11 @@ namespace VideoRemise
                     break;
                 case PlaybackEvent.Tag:
                     Tag();
+                case PlaybackEvent.Escape:
+                    Escape();
+                    break;
+                case PlaybackEvent.ReTrigger:
+                    ReTrigger();
                     break;
                 case PlaybackEvent.Speed10:
                     SetSpeed(.1);
@@ -267,6 +275,37 @@ namespace VideoRemise
                     SetSpeed(1);
                     break;
             }
+        }
+
+        private void ReTrigger()
+        {
+            if (!escaped)
+            {
+                return;
+            }
+
+            mediaPlayerElement.MediaPlayer.Pause();
+            var phrase = actions.ElementAt(currentReplay);
+            var splitTime = mediaPlayerElement.MediaPlayer.PlaybackSession.Position;
+
+            // This always splits at the current time, allowing replay overlap (but I don't think that's a bad thing)
+            var newPhrase = phrase.SplitAt(splitTime);
+            actions.Insert(currentReplay, newPhrase);
+            PlayFromFile();
+        }
+
+        private async void Escape()
+        {
+            var phrase = actions.ElementAt(currentReplay);
+            var duration = mediaPlayerElement.MediaPlayer.PlaybackSession.NaturalDuration;
+            if (phrase.ReplayLength >= duration) {
+                await new MessageDialog("WARNING: Nothing to escape, the phrase recording is shorter than the replay length").ShowAsync();
+                return;
+            }
+            escaped = true;
+            mediaPlayerElement.MediaPlayer.Pause();
+            mediaPlayerElement.MediaPlayer.PlaybackSession.Position = TimeSpan.Zero;
+            mediaPlayerElement.MediaPlayer.Play();
         }
 
         internal void PlayPause()
@@ -319,6 +358,7 @@ namespace VideoRemise
             mediaPlayerElement.Visibility = Visibility.Collapsed;
             showingLive = true;
             playing = false;
+            escaped = false;
             mainPage.CurrentMode = Mode.Recording;
         }
 
@@ -384,7 +424,7 @@ namespace VideoRemise
             }
 
             await StopRecording();
-            PhraseRecording pr = new PhraseRecording(currentFile, length, triggerType);
+            PhraseRecording pr = new PhraseRecording(currentFile, length, null, triggerType);
             actions.Add(pr);
         }
 
@@ -407,15 +447,40 @@ namespace VideoRemise
             StartPlayback();
         }
 
-        internal void PlayFromFile()
+        // Todo: Kinda ugly
+        private void PlayFromFile()
         {
             captureElement.Visibility = Visibility.Collapsed;
             mediaPlayerElement.Visibility = Visibility.Visible;
             showingLive = false;
             playing = true;
+            escaped = false;
             mainPage.CurrentMode = Mode.Replaying;
 
-            var (source, length) = actions.ElementAt(currentReplay).GetSourceAndLength();
+            var phrase = actions.ElementAt(currentReplay);
+            var source = phrase.GetSource();
+            var start = phrase.ReplayStart;
+            var length = phrase.ReplayLength;
+
+            void StartLoop (MediaPlayer player) {
+                player.Pause();
+                if (escaped)
+                {
+                    player.PlaybackSession.Position = TimeSpan.Zero;
+                }
+                else if (start == null)
+                {
+                    var timeToBegin = player.PlaybackSession.NaturalDuration - length;
+                    player.PlaybackSession.Position = TSMax(TimeSpan.Zero, timeToBegin);
+                }
+                else
+                {
+                    player.PlaybackSession.Position = start.Value;
+                }
+
+                player.Play();
+            };
+
             // This has to come before the two event additions because otherwise there's
             // an odd runtime error adding the event hadler that "this" is null in the 
             // handler delegate. Maybe the MediaPlayer element doesn't get initialized
@@ -423,17 +488,29 @@ namespace VideoRemise
             mediaPlayerElement.Source = source;
             mediaPlayerElement.MediaPlayer.MediaOpened += (MediaPlayer sender, object args) =>
             {
-                var start = sender.PlaybackSession.NaturalDuration - length;
-                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
-                sender.Play();
+                StartLoop(sender);
             };
             mediaPlayerElement.MediaPlayer.MediaEnded += (MediaPlayer sender, object args) =>
             {
-                sender.Pause();
-                var start = sender.PlaybackSession.NaturalDuration - length;
-                sender.PlaybackSession.Position = TimeSpan.FromSeconds(Math.Max(start.TotalSeconds, 0));
-                sender.Play();
+                StartLoop(sender);
             };
+
+            if (start != null) {
+                mediaPlayerElement.MediaPlayer.PlaybackSession.PositionChanged += (MediaPlaybackSession session, object args) =>
+                {
+                    if (session.Position > start + length)
+                    {
+                        if (escaped)
+                        {
+                            session.Position = TimeSpan.Zero;
+                        }
+                        else
+                        {
+                            session.Position = start.Value;
+                        }
+                    }
+                };
+            }
         }
 
         internal void StartPlayback()
@@ -631,6 +708,30 @@ namespace VideoRemise
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        internal static TimeSpan TSMax(TimeSpan ts1, TimeSpan ts2)
+        {
+            if (ts1 > ts2)
+            {
+                return ts1;
+            }
+            else
+            {
+                return ts2;
+            }
+        }
+
+        internal static TimeSpan TSMin(TimeSpan ts1, TimeSpan ts2)
+        {
+            if (ts1 < ts2)
+            {
+                return ts1;
+            }
+            else
+            {
+                return ts2;
+            }
         }
     }
 }

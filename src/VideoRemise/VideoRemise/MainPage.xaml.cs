@@ -216,6 +216,12 @@ namespace VideoRemise
                         gridManager.OnPlaybackEvent(PlaybackEvent.Live);
                         SetStatus();
                         break;
+                    case VirtualKey.Escape:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Escape);
+                        break;
+                    case VirtualKey.Back:
+                        gridManager.OnPlaybackEvent(PlaybackEvent.ReTrigger);
+                        break;
                     case VirtualKey.Number0:
                         gridManager.OnPlaybackEvent(PlaybackEvent.Speed100);
                         break;

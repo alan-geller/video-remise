@@ -12,21 +12,31 @@ namespace VideoRemise
 {
     internal class PhraseRecording
     {
-        private StorageFile file;
-        private TimeSpan replayLength;
-        private TriggerType triggerEvent;
+        internal readonly StorageFile file;
+        internal TimeSpan ReplayLength { get; set; }
+        internal TimeSpan? ReplayStart { get; set; }
+        internal TriggerType triggerEvent;
         internal bool Tag { get; set; }
 
-        public PhraseRecording(StorageFile _file, TimeSpan _seconds, TriggerType _triggerEvent)
+        public PhraseRecording(StorageFile _file, TimeSpan _seconds, TimeSpan? _start, TriggerType _triggerEvent)
         {
             file = _file;
-            replayLength = _seconds;
+            ReplayLength = _seconds;
+            ReplayStart = _start;
             triggerEvent = _triggerEvent;
         }
 
-        public (MediaSource, TimeSpan) GetSourceAndLength()
+        public MediaSource GetSource()
         {
-            return (MediaSource.CreateFromStorageFile(file), replayLength);
+            return MediaSource.CreateFromStorageFile(file);
+        }
+
+        public PhraseRecording SplitAt(TimeSpan splitTime)
+        {
+            var newLength = VideoChannel.TSMin(splitTime, ReplayLength);
+            // Guaranteed to be at least 0
+            var newStart = splitTime - newLength;
+            return new PhraseRecording(file, newLength, newStart, triggerEvent);
         }
     }
 }
