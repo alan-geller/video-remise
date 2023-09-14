@@ -238,6 +238,7 @@ namespace VideoRemise
                     break;
                 case PlaybackEvent.Tag:
                     Tag();
+                    break;
                 case PlaybackEvent.Escape:
                     Escape();
                     break;
