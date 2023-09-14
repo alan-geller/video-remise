@@ -30,6 +30,9 @@ namespace VideoRemise
         FrameForward,
         FrameBackward,
         Live,
+        ForwardTag,
+        BackwardTag,
+        Tag,
         Escape,
         ReTrigger,
         Speed10,
@@ -227,6 +230,14 @@ namespace VideoRemise
                 case PlaybackEvent.Live:
                     Live();
                     break;
+                case PlaybackEvent.ForwardTag:
+                    ForwardTag();
+                    break;
+                case PlaybackEvent.BackwardTag:
+                    BackwardTag();
+                    break;
+                case PlaybackEvent.Tag:
+                    Tag();
                 case PlaybackEvent.Escape:
                     Escape();
                     break;
@@ -349,6 +360,42 @@ namespace VideoRemise
             playing = false;
             escaped = false;
             mainPage.CurrentMode = Mode.Recording;
+        }
+
+        internal async void BackwardTag()
+        {
+            for (var i = currentReplay - 1; i >= 0; i--)
+            {
+                if (actions.ElementAt(i).Tag)
+                {
+                    currentReplay = i;
+                    PlayFromFile();
+                    return;
+                }
+            }
+
+            await (new MessageDialog("No more tagged videos before this one")).ShowAsync();
+        }
+
+        internal async void ForwardTag()
+        {
+            for (var i = currentReplay + 1; i < actions.Count; i++)
+            {
+                if (actions.ElementAt(i).Tag)
+                {
+                    currentReplay = i;
+                    PlayFromFile();
+                    return;
+                }
+            }
+
+            await (new MessageDialog("No more tagged videos after this one")).ShowAsync();
+        }
+
+        internal void Tag()
+        {
+            var phrase = actions.ElementAt(currentReplay);
+            phrase.Tag = true;
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)

@@ -47,6 +47,11 @@ namespace VideoRemise
                 if (CurrentMode != Mode.Idle)
                 {
                     e.Handled = true;
+                    if (e.Key == VirtualKey.Tab)
+                    {
+                        gridManager.OnPlaybackEvent(PlaybackEvent.Tag);
+                        SetStatus();
+                    }
                 }
             };
             Active = false;
@@ -176,10 +181,24 @@ namespace VideoRemise
                 switch (e.VirtualKey)
                 {
                     case VirtualKey.PageDown:
-                        gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
+                        if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift) == CoreVirtualKeyStates.Down)
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.BackwardTag);
+                        }
+                        else
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.Backward);
+                        }
                         break;
                     case VirtualKey.PageUp:
-                        gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
+                        if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift) == CoreVirtualKeyStates.Down)
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.ForwardTag);
+                        }
+                        else
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.Forward);
+                        }
                         break;
                     case VirtualKey.Space:
                         gridManager.OnPlaybackEvent(PlaybackEvent.PlayPause);
