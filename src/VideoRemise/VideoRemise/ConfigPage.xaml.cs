@@ -22,10 +22,14 @@ namespace VideoRemise
     {
         private VideoRemiseConfig config;
         private Dictionary<string, DeviceInformation> devices;
+        private Dictionary<string, string> cameras;
+        private Dictionary<string, string> reverseCameras;
 
         public ConfigPage()
         {
             devices = new Dictionary<string, DeviceInformation>();
+            cameras = new Dictionary<string, string>();
+            reverseCameras = new Dictionary<string, string>();
             this.InitializeComponent();
         }
 
@@ -47,17 +51,27 @@ namespace VideoRemise
             videoFeedLeft.Items.Clear();
             videoFeedCenter.Items.Clear();
             videoFeedRight.Items.Clear();
+            cameras.Clear();
+            reverseCameras.Clear();
             var sources = await MediaFrameSourceGroup.FindAllAsync();
             foreach (var source in sources)
             {
-                videoFeedLeft.Items.Add(source.DisplayName);
-                videoFeedCenter.Items.Add(source.DisplayName);
-                videoFeedRight.Items.Add(source.DisplayName);
+                var name = $"{source.DisplayName} ({source.Id})";
+                cameras[name] = source.Id;
+                reverseCameras[source.Id] = name;
+                videoFeedLeft.Items.Add(name);
+                videoFeedCenter.Items.Add(name);
+                videoFeedRight.Items.Add(name);
             }
 
             videoCount1Btn.IsChecked = false;
             videoCount2Btn.IsChecked = false;
             videoCount3Btn.IsChecked = false;
+
+            // Filter the current list of video sources in case it refers to a camera that is
+            // no longer available
+            config.VideoSources.RemoveAll(s => !reverseCameras.ContainsKey(s));
+
             switch (config.VideoSources.Count)
             {
                 case 1:
@@ -65,24 +79,24 @@ namespace VideoRemise
                     videoFeedLeft.IsEnabled = false;
                     videoFeedCenter.IsEnabled = true;
                     videoFeedRight.IsEnabled = false;
-                    videoFeedCenter.SelectedItem = config.VideoSources[0];
+                    videoFeedCenter.SelectedItem = reverseCameras[config.VideoSources[0]];
                     break;
                 case 2:
                     videoCount2Btn.IsChecked = true;
                     videoFeedLeft.IsEnabled = true;
                     videoFeedCenter.IsEnabled = false;
                     videoFeedRight.IsEnabled = true;
-                    videoFeedLeft.SelectedItem = config.VideoSources[0];
-                    videoFeedRight.SelectedItem = config.VideoSources[1];
+                    videoFeedLeft.SelectedItem = reverseCameras[config.VideoSources[0]];
+                    videoFeedRight.SelectedItem = reverseCameras[config.VideoSources[1]];
                     break;
                 case 3:
                     videoCount3Btn.IsChecked = true;
                     videoFeedLeft.IsEnabled = true;
                     videoFeedCenter.IsEnabled = true;
                     videoFeedRight.IsEnabled = true;
-                    videoFeedLeft.SelectedItem = config.VideoSources[0];
-                    videoFeedCenter.SelectedItem = config.VideoSources[1];
-                    videoFeedRight.SelectedItem = config.VideoSources[2];
+                    videoFeedLeft.SelectedItem = reverseCameras[config.VideoSources[0]];
+                    videoFeedCenter.SelectedItem = reverseCameras[config.VideoSources[1]];
+                    videoFeedRight.SelectedItem = reverseCameras[config.VideoSources[2]];
                     break;
                 default:
                     videoFeedLeft.IsEnabled = false;
@@ -142,7 +156,7 @@ namespace VideoRemise
 
             if (config.VideoSources.Count == 1)
             {
-                videoFeedCenter.SelectedItem = config.VideoSources[0];
+                videoFeedCenter.SelectedItem = reverseCameras[config.VideoSources[0]];
             }
         }
 
@@ -165,11 +179,11 @@ namespace VideoRemise
 
             if (config.VideoSources.Count >= 1)
             {
-                videoFeedLeft.SelectedItem = config.VideoSources[0];
+                videoFeedLeft.SelectedItem = reverseCameras[config.VideoSources[0]];
             }
             if (config.VideoSources.Count == 2)
             {
-                videoFeedRight.SelectedItem = config.VideoSources[1];
+                videoFeedRight.SelectedItem = reverseCameras[config.VideoSources[1]];
             }
         }
 
@@ -183,18 +197,18 @@ namespace VideoRemise
             {
                 case 1:
                     videoFeedLeft.SelectedIndex = -1;
-                    videoFeedCenter.SelectedItem = config.VideoSources[0];
+                    videoFeedCenter.SelectedItem = reverseCameras[config.VideoSources[0]];
                     videoFeedRight.SelectedIndex = -1;
                     break;
                 case 2:
-                    videoFeedLeft.SelectedItem = config.VideoSources[0];
+                    videoFeedLeft.SelectedItem = reverseCameras[config.VideoSources[0]];
                     videoFeedCenter.SelectedIndex = -1;
-                    videoFeedRight.SelectedItem = config.VideoSources[1];
+                    videoFeedRight.SelectedItem = reverseCameras[config.VideoSources[1]];
                     break;
                 case 3:
-                    videoFeedLeft.SelectedItem = config.VideoSources[0];
-                    videoFeedCenter.SelectedItem = config.VideoSources[1];
-                    videoFeedRight.SelectedItem = config.VideoSources[2];
+                    videoFeedLeft.SelectedItem = reverseCameras[config.VideoSources[0]];
+                    videoFeedCenter.SelectedItem = reverseCameras[config.VideoSources[1]];
+                    videoFeedRight.SelectedItem = reverseCameras[config.VideoSources[2]];
                     break;
             }
         }
@@ -224,15 +238,15 @@ namespace VideoRemise
             var newSources = new List<string>();
             if (videoFeedLeft.SelectedIndex >= 0)
             {
-                newSources.Add(videoFeedLeft.SelectedItem.ToString());
+                newSources.Add(cameras[videoFeedLeft.SelectedItem.ToString()]);
             }
             if (videoFeedCenter.SelectedIndex >= 0)
             {
-                newSources.Add(videoFeedCenter.SelectedItem.ToString());
+                newSources.Add(cameras[videoFeedCenter.SelectedItem.ToString()]);
             }
             if (videoFeedRight.SelectedIndex >= 0)
             {
-                newSources.Add(videoFeedRight.SelectedItem.ToString());
+                newSources.Add(cameras[videoFeedRight.SelectedItem.ToString()]);
             }
 
             var camerasChanged = false;
