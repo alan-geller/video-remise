@@ -500,13 +500,13 @@ namespace VideoRemise
             }
         }
 
-        internal async Task SetSource(string name)
+        internal async Task SetSource(string id)
         {
-            MediaFrameSourceGroup FindSource(string sourceName)
+            MediaFrameSourceGroup FindSource(string sourceId)
             {
                 foreach (var frameSource in CurrentSources)
                 {
-                    if (sourceName == frameSource.DisplayName)
+                    if (sourceId == frameSource.Id)
                     {
                         return frameSource;
                     }
@@ -528,7 +528,7 @@ namespace VideoRemise
 
             await ClearSource();
 
-            currentSourceGroup = FindSource(name);
+            currentSourceGroup = FindSource(id);
             if (currentSourceGroup != null)
             {
                 try

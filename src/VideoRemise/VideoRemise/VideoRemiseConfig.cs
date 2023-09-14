@@ -13,6 +13,7 @@ namespace VideoRemise
         public const int Foil = 1;
         public const int Saber = 2;
 
+        // Video sources are stored as the MediaFrameSource.SourceId field, which is unique
         public List<string> VideoSources { get; set; } = new List<string>();
         public string AudioSource { get; set; } = null;
 
