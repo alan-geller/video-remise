@@ -21,6 +21,7 @@ namespace VideoRemise
         private Grid grid;
         private List<VideoChannel> channels;
         private bool zoomed = false;
+        private int zoomColumn = -1;
         private Stopwatch streamStopwatch = new Stopwatch();
         //private TimeSpan replayStart;
         //private TimeSpan replayEnd;
@@ -84,30 +85,56 @@ namespace VideoRemise
         {
             mainPage.LayoutGrid.Width = frameWidth;
 
+            int n = 0;
             foreach (var channel in channels)
             {
-                var videoWidth = frameWidth * channel.RelativeWidth;
+                if (zoomed)
+                {
+                    if (n == zoomColumn)
+                    {
+                        mainPage.LayoutGrid.ColumnDefinitions[channel.GridColumn].Width = 
+                            new GridLength(frameWidth);
+                        channel.CaptureElement.Width = frameWidth;
+                        channel.PlayerElement.Width = frameWidth;
+                        channels[n].Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        mainPage.LayoutGrid.ColumnDefinitions[channel.GridColumn].Width =
+                            new GridLength(0.0);
+                        channel.Visibility = Visibility.Collapsed;
+                    }
+                }
+                else
+                {
+                    var videoWidth = frameWidth * channel.RelativeWidth;
 
-                mainPage.LayoutGrid.ColumnDefinitions[channel.GridColumn].Width = new GridLength(videoWidth);
-                channel.CaptureElement.Width = videoWidth;
-                channel.PlayerElement.Width = videoWidth;
+                    mainPage.LayoutGrid.ColumnDefinitions[channel.GridColumn].Width = 
+                        new GridLength(videoWidth);
+                    channel.CaptureElement.Width = videoWidth;
+                    channel.PlayerElement.Width = videoWidth;
+                    channels[n].Visibility = Visibility.Visible;
+                }
+                n++;
             }
         }
 
         internal void ToggleZoom(int column)
         {
             zoomed = !zoomed;
-            for (int n = 0; n < channels.Count; n++)
-            {
-                if (zoomed && (n != column))
-                {
-                    channels[n].Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    channels[n].Visibility = Visibility.Visible;
-                }
-            }
+            zoomColumn = zoomed ? column : -1;
+            AdjustWidths(mainPage.LayoutGrid.Width);
+            //for (int n = 0; n < channels.Count; n++)
+            //{
+            //    if (zoomed && (n != column))
+            //    {
+            //        channels[n].Visibility = Visibility.Collapsed;
+            //    }
+            //    else
+            //    {
+            //        channels[n].Visibility = Visibility.Visible;
+            //    }
+            //}
         }
 
         internal async Task StartRecording(string fileName)
