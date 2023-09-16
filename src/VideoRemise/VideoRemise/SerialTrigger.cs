@@ -5,7 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.SerialCommunication;
+using Windows.Foundation;
+using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.UI.Popups;
 
 namespace VideoRemise
 {
@@ -19,14 +22,33 @@ namespace VideoRemise
         private CancellationTokenSource readCancellationTokenSource;
         private Object readCancelLock;
         protected uint readFrameLength;
+        protected StorageFile logFile = null;
+        private IAsyncAction readingAction;
 
         public SerialTrigger()
         {
         }
 
+        protected async Task Log(string text)
+        {
+            if (logFile != null)
+            {
+                await FileIO.AppendTextAsync(logFile, text + "\n");
+            }
+        }
+
         public override async Task Initialize(VideoRemiseConfig config)
         {
+            reader?.Dispose();
+            inputStream?.Dispose();
+            device?.Dispose();
+
             device = await SerialDevice.FromIdAsync(config.AdapterDeviceId);
+            if (device == null)
+            {
+                await new MessageDialog("Serial adapter not found").ShowAsync();
+                config.AdapterDeviceId = "";
+            }
 
             inputStream = device.InputStream;
             reader = new DataReader(inputStream);
@@ -34,17 +56,36 @@ namespace VideoRemise
                 | InputStreamOptions.ReadAhead;
             readCancellationTokenSource = new CancellationTokenSource();
             readCancelLock = new Object();
+
+            if (logFile == null)
+            {
+                var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+                savePicker.SuggestedStartLocation =
+                    Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+                // Dropdown of file types the user can save the file as
+                savePicker.FileTypeChoices.Add("Plain Text", new List<string>() { ".txt" });
+                // Default file name if the user does not type one in or select a file to replace
+                savePicker.SuggestedFileName = "Serial adapter log";
+                logFile = await savePicker.PickSaveFileAsync();
+                await Log("Initialized");
+            }
+
+            StartReadingAsync();
         }
 
         public void StartReadingAsync()
         {
             var cancellationToken = readCancellationTokenSource.Token;
 
-            readingTask = Task.Run(() =>  ReadAsync(cancellationToken));
+            readingAction = Windows.System.Threading.ThreadPool.RunAsync
+                (async _ => await ReadAsync(cancellationToken), 
+                Windows.System.Threading.WorkItemPriority.High,
+                Windows.System.Threading.WorkItemOptions.TimeSliced);
         }
 
         private async Task ReadAsync(CancellationToken cancellationToken)
         {
+            await Log("Starting read thread");
             while (true)
             {
                 // Don't start any IO if we canceled the task
@@ -63,7 +104,7 @@ namespace VideoRemise
                     var readCount = await reader.LoadAsync(readFrameLength).AsTask(cancellationToken);
                     if (readCount > 0)
                     {
-                        ProcessBuffer();
+                        await ProcessBufferAsync();
                     }
                 }
                 catch (OperationCanceledException)
@@ -71,9 +112,10 @@ namespace VideoRemise
                     break;
                 }
             }
+            await Log("Exiting read thread");
         }
 
-        protected abstract void ProcessBuffer();
+        protected abstract Task ProcessBufferAsync();
 
         public void StopReading()
         {
@@ -92,12 +134,13 @@ namespace VideoRemise
                     StopReading();
                     // We want to make sure the current read is really done
                     // before we dispose of these items
-                    readingTask.ContinueWith(
-                        (_) => { 
-                            reader.Dispose();
-                            inputStream.Dispose();
-                            device.Dispose();
-                        });
+                    readingAction.GetResults();
+                    //readingTask.ContinueWith(
+                    //    (_) => { 
+                            reader?.Dispose();
+                            inputStream?.Dispose();
+                            device?.Dispose();
+                        //});
                 }
 
                 disposedValue = true;
