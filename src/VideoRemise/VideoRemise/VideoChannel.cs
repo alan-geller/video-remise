@@ -74,6 +74,7 @@ namespace VideoRemise
         private bool showingLive = true;
         private bool playing = false;
         private bool escaped = false;
+        private bool focused = false;
 
         public MediaPlayerElement PlayerElement => mediaPlayerElement;
         public CaptureElement CaptureElement => captureElement;
@@ -397,6 +398,7 @@ namespace VideoRemise
         {
             var phrase = actions.ElementAt(currentReplay);
             phrase.Tag = true;
+            focused = true;
         }
 
         internal async Task<IAsyncAction> StartRecording(string fileBaseName)
@@ -445,7 +447,9 @@ namespace VideoRemise
 
             await EndPhrase(length, triggerType);
             await StartPhrase();
-            StartPlayback();
+            if (!focused) {
+                StartPlayback();
+            }
         }
 
         // Todo: Kinda ugly

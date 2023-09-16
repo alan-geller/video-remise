@@ -11,7 +11,8 @@ namespace VideoRemise
     {
         Idle,
         Recording,
-        Replaying
+        Replaying,
+        Focused
     }
 
     public sealed partial class MainPage : Page
@@ -49,7 +50,16 @@ namespace VideoRemise
                     e.Handled = true;
                     if (e.Key == VirtualKey.Tab)
                     {
-                        gridManager.OnPlaybackEvent(PlaybackEvent.Tag);
+                        if (CurrentMode == Mode.Focused)
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.Live);
+                            CurrentMode = Mode.Recording;
+                        } else
+                        {
+                            gridManager.OnPlaybackEvent(PlaybackEvent.Tag);
+                            CurrentMode = Mode.Focused;
+                        }
+
                         SetStatus();
                     }
                 }
@@ -377,6 +387,9 @@ namespace VideoRemise
                     break;
                 case Mode.Recording:
                     content.Text = "Recording";
+                    break;
+                case Mode.Focused:
+                    content.Text = "Focused - Replays are being recorded but will not be shown. Press tab to unfocus.";
                     break;
             }
         }
