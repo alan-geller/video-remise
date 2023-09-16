@@ -62,6 +62,7 @@ namespace VideoRemise
             {
                 deviceSettings.Values[$"VideoSource{i++}"] = src;
             }
+            deviceSettings.Values["Adapter"] = AdapterDeviceId;
             deviceSettings.Values["TriggerProtocol"] = TriggerProtocol;
             deviceSettings.Values["ManualTriggerEnabled"] = ManualTriggerEnabled;
             deviceSettings.Values["AudioEnabled"] = AudioSource != null;
@@ -109,6 +110,20 @@ namespace VideoRemise
                 return color;
             }
 
+            T ValueOrDefault<T>(ApplicationDataContainer container, string key, 
+                T def)
+            {
+                object o;
+                if (container.Values.TryGetValue(key, out o))
+                {
+                    return (T)o;
+                }
+                else
+                {
+                    return def;
+                }
+            }
+
             var config = new VideoRemiseConfig();
             var appSettings = ApplicationData.Current.LocalSettings;
 
@@ -117,14 +132,19 @@ namespace VideoRemise
                 // Throws if the container doesn't exist
                 var deviceSettings = appSettings.CreateContainer("Device",
                     ApplicationDataCreateDisposition.Existing);
-                var videoCount = (int)deviceSettings.Values["VideoCount"];
+                var videoCount = ValueOrDefault(deviceSettings, "VideoCount", 0);
                 for (int i = 0; i < videoCount; i++)
                 {
-                    config.VideoSources.Add(deviceSettings.Values[$"VideoSource{i}"]?.ToString());
+                    config.VideoSources.Add(ValueOrDefault(deviceSettings, 
+                        $"VideoSource{i}", "").ToString());
                 }
-                config.TriggerProtocol = deviceSettings.Values["TriggerProtocol"].ToString();
-                config.ManualTriggerEnabled = (bool)deviceSettings.Values["ManualTriggerEnabled"];
-                if ((bool)(deviceSettings.Values["AudioEnabled"] ?? false))
+
+                config.AdapterDeviceId = ValueOrDefault(deviceSettings, "Adapter", "");
+                config.TriggerProtocol = ValueOrDefault(deviceSettings, "TriggerProtocol", 
+                    "");
+                config.ManualTriggerEnabled = ValueOrDefault(deviceSettings, 
+                    "ManualTriggerEnabled", true);
+                if (ValueOrDefault(deviceSettings, "AudioEnabled", false))
                 {
                     config.AudioSource = "test";
                 }
@@ -142,9 +162,11 @@ namespace VideoRemise
                 for (int i = 0; i < 3; i++)
                 {
                     config.ReplayDurationBeforeTrigger[i] = 
-                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PreTrigger{i}"]);
-                    config.ReplayDurationAfterTrigger[i] = 
-                        TimeSpan.FromSeconds((double)timingSettings.Values[$"PostTrigger{i}"]);
+                        TimeSpan.FromSeconds(ValueOrDefault(timingSettings,
+                        $"PreTrigger{i}", 6.0));
+                    config.ReplayDurationAfterTrigger[i] =
+                        TimeSpan.FromSeconds(ValueOrDefault(timingSettings,
+                        $"PostTrigger{i}", 1.5));
                 }
             }
             catch (Exception)
