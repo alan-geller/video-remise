@@ -36,16 +36,17 @@ namespace VideoRemise
         public override async Task Initialize(VideoRemiseConfig config)
         {
             await base.Initialize(config);
-            device.BaudRate = 1200;
+            //device.BaudRate = 1200;
         }
 
-        protected override void ProcessBuffer()
+        protected override async Task ProcessBufferAsync()
         {
-            bool ScanForFrame()
+            async Task<bool> ScanForFrame()
             {
                 while (reader.UnconsumedBufferLength > 0)
                 {
                     var readByte = reader.ReadByte();
+                    await Log($"Read {readByte:x} while looking for start of frame");
                     if (readByte == StartOfFrame)
                     {
                         position++;
@@ -58,21 +59,23 @@ namespace VideoRemise
             // If we think we're at the beginning, scan for a start of frame byte
             if (position == 0)
             {
-                if (!ScanForFrame())
+                if (!await ScanForFrame())
                 {
-                    // If we didn't get passed the start-of-frame byte yet, keep reading
+                    // If we didn't get past the start-of-frame byte yet, keep reading
                     return;
                 }
             }
 
             var currentByte = reader.ReadByte();
-            position++;
+            await Log($"Position {position}: read {currentByte:x}");
             // We ignore all the other bytes; this could mean that we accept a frame
             // with a bad checksum, but we don't know the checksum algorithm (yet).
             if (position == LightStatusPosition)
             {
                 lightStatus = (Lights)(LightStatusMask & currentByte);
+                await Log($"Light status is {lightStatus:b}");
             }
+            position++;
 
             if (position >= readFrameLength)
             {
