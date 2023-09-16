@@ -43,11 +43,19 @@ namespace VideoRemise
             inputStream?.Dispose();
             device?.Dispose();
 
-            device = await SerialDevice.FromIdAsync(config.AdapterDeviceId);
+            try
+            {
+                device = await SerialDevice.FromIdAsync(config.AdapterDeviceId);
+            }
+            catch
+            {
+                device = null;
+            }
             if (device == null)
             {
                 await new MessageDialog("Serial adapter not found").ShowAsync();
                 config.AdapterDeviceId = "";
+                return;
             }
 
             inputStream = device.InputStream;
