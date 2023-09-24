@@ -1,20 +1,14 @@
-﻿using System;
+﻿using Microsoft.Graphics.Canvas;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Media.Effects;
-using Windows.Media.MediaProperties;
+using System.Runtime.InteropServices;
+using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Imaging;
-using Windows.Media;
-using Windows.Devices.Sensors;
+using Windows.Media.Effects;
+using Windows.Media.MediaProperties;
 using Windows.UI;
-using System.Runtime.InteropServices;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Effects;
-using System.Runtime.CompilerServices;
 
 namespace LightDisplayVisualEffect
 {
@@ -108,7 +102,7 @@ namespace LightDisplayVisualEffect
 
                     byte* targetDataInBytes;
                     uint targetCapacity;
-                    ((IMemoryBufferByteAccess)targetReference).GetBuffer(out targetDataInBytes, 
+                    ((IMemoryBufferByteAccess)targetReference).GetBuffer(out targetDataInBytes,
                         out targetCapacity);
 
                     BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
@@ -128,11 +122,15 @@ namespace LightDisplayVisualEffect
                     bool rightGreen = (lights & Lights.Green) != 0;
                     bool rightWhite = (lights & Lights.RightWhite) != 0;
                     uint rightColor = rightGreen ? greenLightARGB : whiteLightARGB;
-
-                    // Optimize by hand by having multiple loops and pulling branches and
-                    // calculations outside of the loops as much as we can
                     uint leftColor = leftRed ? redLightARGB : whiteLightARGB;
                     bool rightOn = rightGreen || rightWhite;
+
+                    // Optimize by hand by having multiple loops and pulling branches and
+                    // calculations outside of the loops as much as we can.
+                    // Using Buffer.MemoryCopy should also help, it is supposed to be faster than
+                    // an explicit loop.
+                    // One thing to investigate is whether it might be more efficient to declare this
+                    // effect as read-only, and then to simply update the light regions if necessary.
                     if (leftOn && rightOn)
                     {
                         for (int i = 0; i < topBorder; i++)
@@ -154,14 +152,17 @@ namespace LightDisplayVisualEffect
                                 }
                             }
                         }
-                        for (int i = topBorder; i < bufferLayout.Height; i++)
-                        {
-                            for (int j = 0; j < bufferLayout.Width; j++)
-                            {
-                                int idx = start + stride * i + j;
-                                outputInts[idx] = inputInts[idx];
-                            }
-                        }
+                        int startOffset = (start + stride * topBorder) * 4;
+                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
+                        //for (int i = topBorder; i < bufferLayout.Height; i++)
+                        //{
+                        //    for (int j = 0; j < bufferLayout.Width; j++)
+                        //    {
+                        //        int idx = start + stride * i + j;
+                        //        outputInts[idx] = inputInts[idx];
+                        //    }
+                        //}
                     }
                     else if (leftOn)
                     {
@@ -180,14 +181,17 @@ namespace LightDisplayVisualEffect
                                 }
                             }
                         }
-                        for (int i = topBorder; i < bufferLayout.Height; i++)
-                        {
-                            for (int j = 0; j < bufferLayout.Width; j++)
-                            {
-                                int idx = start + stride * i + j;
-                                outputInts[idx] = inputInts[idx];
-                            }
-                        }
+                        int startOffset = (start + stride * topBorder) * 4;
+                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
+                        //for (int i = topBorder; i < bufferLayout.Height; i++)
+                        //{
+                        //    for (int j = 0; j < bufferLayout.Width; j++)
+                        //    {
+                        //        int idx = start + stride * i + j;
+                        //        outputInts[idx] = inputInts[idx];
+                        //    }
+                        //}
                     }
                     else if (rightOn)
                     {
@@ -206,25 +210,31 @@ namespace LightDisplayVisualEffect
                                 }
                             }
                         }
-                        for (int i = topBorder; i < bufferLayout.Height; i++)
-                        {
-                            for (int j = 0; j < bufferLayout.Width; j++)
-                            {
-                                int idx = start + stride * i + j;
-                                outputInts[idx] = inputInts[idx];
-                            }
-                        }
+                        int startOffset = (start + stride * topBorder) * 4;
+                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
+                        //for (int i = topBorder; i < bufferLayout.Height; i++)
+                        //{
+                        //    for (int j = 0; j < bufferLayout.Width; j++)
+                        //    {
+                        //        int idx = start + stride * i + j;
+                        //        outputInts[idx] = inputInts[idx];
+                        //    }
+                        //}
                     }
                     else
                     {
-                        for (int i = 0; i < bufferLayout.Height; i++)
-                        {
-                            for (int j = 0; j < bufferLayout.Width; j++)
-                            {
-                                int idx = start + stride * i + j;
-                                outputInts[idx] = inputInts[idx];
-                            }
-                        }
+                        int startOffset = start * 4;
+                        int length = 4 * bufferLayout.Width * bufferLayout.Height;
+                        Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
+                        //for (int i = 0; i < bufferLayout.Height; i++)
+                        //{
+                        //    for (int j = 0; j < bufferLayout.Width; j++)
+                        //    {
+                        //        int idx = start + stride * i + j;
+                        //        outputInts[idx] = inputInts[idx];
+                        //    }
+                        //}
                     }
                 }
             }
@@ -236,7 +246,32 @@ namespace LightDisplayVisualEffect
             using (CanvasRenderTarget renderTarget = CanvasRenderTarget.CreateFromDirect3D11Surface(canvasDevice, context.OutputFrame.Direct3DSurface))
             using (CanvasDrawingSession ds = renderTarget.CreateDrawingSession())
             {
-                ds.DrawImage(inputBitmap);
+                ds.DrawImage(inputBitmap); // Skip this if we change to IsReadOnly==true
+
+                var lightHeight = renderTarget.SizeInPixels.Height / 24;
+                var lightWidth = renderTarget.SizeInPixels.Width / 4;
+                var lightSize = new Size(lightWidth, lightHeight);
+                var leftStart = renderTarget.SizeInPixels.Width / 8;
+                var rightStart = 5 * renderTarget.SizeInPixels.Width / 8;
+                var leftLight = new Point(leftStart, 0);
+                var rightLight = new Point(rightStart, 0);
+
+                bool leftRed = (lights & Lights.Red) != 0;
+                bool leftWhite = (lights & Lights.LeftWhite) != 0;
+                bool rightGreen = (lights & Lights.Green) != 0;
+                bool rightWhite = (lights & Lights.RightWhite) != 0;
+
+                if (leftRed || leftWhite)
+                {
+                    Rect rect = new Rect(leftLight, lightSize);
+                    ds.FillRectangle(rect, leftRed ? redLightColor : whiteLightColor);
+                }
+
+                if (rightGreen || rightWhite)
+                {
+                    Rect rect = new Rect(rightLight, lightSize);
+                    ds.FillRectangle(rect, rightGreen ? greenLightColor : whiteLightColor);
+                }
             }
         }
 
@@ -260,7 +295,7 @@ namespace LightDisplayVisualEffect
             }
         }
 
-        public MediaMemoryTypes SupportedMemoryTypes 
+        public MediaMemoryTypes SupportedMemoryTypes
             => MediaMemoryTypes.GpuAndCpu;
 
         public bool TimeIndependent => true;
