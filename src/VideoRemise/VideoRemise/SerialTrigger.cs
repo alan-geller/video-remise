@@ -17,7 +17,6 @@ namespace VideoRemise
         protected SerialDevice device;
         protected IInputStream inputStream;
         protected DataReader reader;
-        private Task readingTask;
         private bool disposedValue;
         private CancellationTokenSource readCancellationTokenSource;
         private Object readCancelLock;
