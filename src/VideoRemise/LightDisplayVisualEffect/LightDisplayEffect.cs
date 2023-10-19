@@ -47,6 +47,7 @@ namespace LightDisplayVisualEffect
         private Color whiteLightColor;
         private uint whiteLightARGB;
         private CanvasDevice canvasDevice;
+        const int BytesPerPixel = 4; // For ARGB encoding
 
         private uint ColorToARGBuint(Color color)
         {
@@ -108,8 +109,12 @@ namespace LightDisplayVisualEffect
                     BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
                     uint* inputInts = (uint*)dataInBytes;
                     uint* outputInts = (uint*)targetDataInBytes;
-                    int start = bufferLayout.StartIndex / 4;
-                    int stride = bufferLayout.Stride / 4;
+                    int start = bufferLayout.StartIndex / BytesPerPixel;
+                    int stride = bufferLayout.Stride / BytesPerPixel;
+                    // For the lights we use rectangles of 1/24th the height of the video frame,
+                    // starting at the top of the frame.
+                    // The width of each light rectangle is 1/4 the width of the frame, and the
+                    // lights are centered at the 1/4 and 3/4 points of the frame.
                     int topBorder = bufferLayout.Height / 24;
                     int lightWidth = bufferLayout.Width / 4;
                     int leftStart = bufferLayout.Width / 8;
@@ -152,8 +157,8 @@ namespace LightDisplayVisualEffect
                                 }
                             }
                         }
-                        int startOffset = (start + stride * topBorder) * 4;
-                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        int startOffset = (start + stride * topBorder) * BytesPerPixel;
+                        int length = BytesPerPixel * bufferLayout.Width * (bufferLayout.Height - topBorder);
                         Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
                         //for (int i = topBorder; i < bufferLayout.Height; i++)
                         //{
@@ -182,7 +187,7 @@ namespace LightDisplayVisualEffect
                             }
                         }
                         int startOffset = (start + stride * topBorder) * 4;
-                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        int length = BytesPerPixel * bufferLayout.Width * (bufferLayout.Height - topBorder);
                         Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
                         //for (int i = topBorder; i < bufferLayout.Height; i++)
                         //{
@@ -210,8 +215,8 @@ namespace LightDisplayVisualEffect
                                 }
                             }
                         }
-                        int startOffset = (start + stride * topBorder) * 4;
-                        int length = 4 * bufferLayout.Width * (bufferLayout.Height - topBorder);
+                        int startOffset = (start + stride * topBorder) * BytesPerPixel;
+                        int length = BytesPerPixel * bufferLayout.Width * (bufferLayout.Height - topBorder);
                         Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
                         //for (int i = topBorder; i < bufferLayout.Height; i++)
                         //{
@@ -224,8 +229,8 @@ namespace LightDisplayVisualEffect
                     }
                     else
                     {
-                        int startOffset = start * 4;
-                        int length = 4 * bufferLayout.Width * bufferLayout.Height;
+                        int startOffset = start * BytesPerPixel;
+                        int length = BytesPerPixel * bufferLayout.Width * bufferLayout.Height;
                         Buffer.MemoryCopy(dataInBytes + startOffset, targetDataInBytes + startOffset, length, length);
                         //for (int i = 0; i < bufferLayout.Height; i++)
                         //{
@@ -248,6 +253,10 @@ namespace LightDisplayVisualEffect
             {
                 ds.DrawImage(inputBitmap); // Skip this if we change to IsReadOnly==true
 
+                // For the lights we use rectangles of 1/24th the height of the video frame,
+                // starting at the top of the frame.
+                // The width of each light rectangle is 1/4 the width of the frame, and the
+                // lights are centered at the 1/4 and 3/4 points of the frame.
                 var lightHeight = renderTarget.SizeInPixels.Height / 24;
                 var lightWidth = renderTarget.SizeInPixels.Width / 4;
                 var lightSize = new Size(lightWidth, lightHeight);
