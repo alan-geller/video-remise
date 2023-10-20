@@ -434,8 +434,8 @@ namespace VideoRemise
         internal async Task<IAsyncAction> StopRecording()
         {
             isRecording = false;
-            await mediaRecording.StopAsync();
-            return mediaRecording.FinishAsync();
+            await mediaRecording?.StopAsync();
+            return mediaRecording?.FinishAsync();
         }
 
         internal async void Trigger(TimeSpan length, TriggerType triggerType)
