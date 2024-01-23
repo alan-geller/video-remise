@@ -112,7 +112,7 @@ namespace VideoRemise
             if (position == LightStatusPosition)
             {
                 lightStatus = (Lights)(LightStatusMask & currentByte);
-                await Log($"Light status is {lightStatus:b}");
+                await Log($"Light status is {lightStatus}");
             }
 
             if (position >= readFrameLength)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +58,13 @@ namespace VideoRemise
                 return;
             }
 
+            //device.IsDataTerminalReadyEnabled = true;
+            //device.IsRequestToSendEnabled = true;
+            device.BaudRate = 2400;
+            device.DataBits = 8;
+            device.Parity = SerialParity.None;
+            device.StopBits = SerialStopBitCount.One;
+
             inputStream = device.InputStream;
             reader = new DataReader(inputStream);
             reader.InputStreamOptions = InputStreamOptions.Partial 
@@ -75,6 +83,18 @@ namespace VideoRemise
                 savePicker.SuggestedFileName = "Serial adapter log";
                 logFile = await savePicker.PickSaveFileAsync();
                 await Log("Initialized");
+                await Log($"Device port is {device.PortName}");
+                await Log($"Baud rate is {device.BaudRate}");
+                await Log($"Device parity is {device.Parity}");
+                await Log($"Device data bits is {device.DataBits}");
+                await Log($"Device stop bits is {device.StopBits}");
+                await Log($"Device carrier detect state is {device.CarrierDetectState}");
+                await Log($"Device clear to send state is {device.ClearToSendState}");
+                await Log($"Device data set ready state is {device.DataSetReadyState}");
+                await Log($"Device handshake is {device.Handshake}");
+                await Log($"Device read timeout is {device.ReadTimeout}");
+                await Log($"Device DTR enabled state is {device.IsDataTerminalReadyEnabled}");
+                await Log($"Device RTS enabled state is {device.IsRequestToSendEnabled}");
             }
 
             StartReadingAsync();
@@ -108,7 +128,9 @@ namespace VideoRemise
                 // operation explicitly.
                 try
                 {
+                    await Log("About to read");
                     var readCount = await reader.LoadAsync(readFrameLength).AsTask(cancellationToken);
+                    await Log($"Read {readCount} bytes");
                     if (readCount > 0)
                     {
                         await ProcessBufferAsync();
