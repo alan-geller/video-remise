@@ -361,6 +361,7 @@ namespace VideoRemise
             showingLive = true;
             playing = false;
             escaped = false;
+            focused = false;
             mainPage.CurrentMode = Mode.Recording;
         }
 
@@ -396,6 +397,12 @@ namespace VideoRemise
 
         internal void Tag()
         {
+            if (focused)
+            {
+                focused = false;
+                return;
+            }
+
             var phrase = actions.ElementAt(currentReplay);
             phrase.Tag = true;
             focused = true;

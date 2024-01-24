@@ -169,8 +169,10 @@ namespace VideoRemise
             {
                 channel.StartPlayback();
             }
-            mainPage.CurrentMode = Mode.Replaying;
-            mainPage.SetStatus();
+            if (mainPage.CurrentMode != Mode.Focused) {
+                mainPage.CurrentMode = Mode.Replaying;
+                mainPage.SetStatus();
+            }
         }
 
         internal void OnPlaybackEvent(PlaybackEvent playbackEvent)
@@ -194,8 +196,11 @@ namespace VideoRemise
                 channel.Trigger(replayDurationBeforeTrigger + replayDurationAfterTrigger, 
                     triggerType);
             }
-            mainPage.CurrentMode = Mode.Replaying;
-            mainPage.SetStatus();
+            if (mainPage.CurrentMode != Mode.Focused)
+            {
+                mainPage.CurrentMode = Mode.Replaying;
+                mainPage.SetStatus();
+            }
         }
 
         private void OnLightStatus(object sender, Trigger.LightEventArgs args)
