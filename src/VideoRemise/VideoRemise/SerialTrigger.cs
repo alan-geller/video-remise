@@ -128,9 +128,9 @@ namespace VideoRemise
                 // operation explicitly.
                 try
                 {
-                    await Log("About to read");
+                    //await Log("About to read");
                     var readCount = await reader.LoadAsync(readFrameLength).AsTask(cancellationToken);
-                    await Log($"Read {readCount} bytes");
+                    //await Log($"Read {readCount} bytes");
                     if (readCount > 0)
                     {
                         await ProcessBufferAsync();

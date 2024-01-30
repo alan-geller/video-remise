@@ -28,7 +28,7 @@ namespace VideoRemise
     internal class FaveroFA01Trigger : SerialTrigger
     {
         const byte StartOfFrame = 0xff;
-        const int LightStatusPosition = 5;
+        const int LightStatusPosition = 6;
         const byte LightStatusMask = 0x0f;
         const int FrameSize = 10;
         byte[] CurrentFrame;
@@ -52,12 +52,12 @@ namespace VideoRemise
 
         protected override async Task ProcessBufferAsync()
         {
-            async Task<bool> ScanForStartOfFrame()
+            /*async Task<bool>*/bool ScanForStartOfFrame()
             {
                 while (reader.UnconsumedBufferLength > 0)
                 {
                     var readByte = reader.ReadByte();
-                    await Log($"Read {readByte:x} while looking for start of frame");
+                    //await Log($"Read {readByte:x} while looking for start of frame");
                     if (readByte == StartOfFrame)
                     {
                         CurrentFrame[position] = readByte;
@@ -81,7 +81,7 @@ namespace VideoRemise
             // If we think we're at the beginning, scan for a start of frame byte
             if (position == 0)
             {
-                if (!await ScanForStartOfFrame())
+                if (!/*await*/ ScanForStartOfFrame())
                 {
                     // If we didn't get past the start-of-frame byte yet, keep reading
                     return;
@@ -89,7 +89,7 @@ namespace VideoRemise
             }
 
             var currentByte = reader.ReadByte();
-            await Log($"Position {position}: read {currentByte:x}");
+            //await Log($"Position {position}: read {currentByte:x}");
             // We ignore all the other bytes; this could mean that we accept a frame
             // with a bad checksum, but we don't know the checksum algorithm (yet).
             if ((currentByte == StartOfFrame) && (position == 1))
@@ -117,9 +117,24 @@ namespace VideoRemise
 
             if (position >= readFrameLength)
             {
+                var sb = new StringBuilder();
+                for (int i = 0; i < readFrameLength; i++)
+                {
+                    sb.Append($"{CurrentFrame[i]:x2}");
+                    if (i < readFrameLength - 1)
+                    {
+                        sb.Append(" ");
+                    }
+                }
+                await Log($"Read frame {sb.ToString()}");
                 if (ValidateChecksum())
                 {
+                    await Log($"Firing light event with status {lightStatus}");
                     FireLightEvent(lightStatus);
+                }
+                else
+                {
+                    await Log("Bad checksum on frame!!");
                 }
                 position = 0;
             }
