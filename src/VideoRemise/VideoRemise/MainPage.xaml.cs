@@ -334,8 +334,11 @@ namespace VideoRemise
                 //        config.ReplaySecondsBeforeTrigger[CurrentWeapon]);
                 //}
                 gridManager.OnHalt(TriggerType.Halt);
-                CurrentMode = Mode.Replaying;
-                SetStatus();
+                if (CurrentMode != Mode.Focused)
+                {
+                    CurrentMode = Mode.Replaying;
+                    SetStatus();
+                }
             }
         }
 
