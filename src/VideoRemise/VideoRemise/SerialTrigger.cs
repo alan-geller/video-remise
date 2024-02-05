@@ -58,8 +58,8 @@ namespace VideoRemise
                 return;
             }
 
-            //device.IsDataTerminalReadyEnabled = true;
-            //device.IsRequestToSendEnabled = true;
+            device.IsDataTerminalReadyEnabled = true;
+            device.IsRequestToSendEnabled = true;
             device.BaudRate = 2400;
             device.DataBits = 8;
             device.Parity = SerialParity.None;
@@ -128,9 +128,7 @@ namespace VideoRemise
                 // operation explicitly.
                 try
                 {
-                    //await Log("About to read");
                     var readCount = await reader.LoadAsync(readFrameLength).AsTask(cancellationToken);
-                    //await Log($"Read {readCount} bytes");
                     if (readCount > 0)
                     {
                         await ProcessBufferAsync();
