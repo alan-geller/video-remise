@@ -29,6 +29,10 @@ namespace VideoRemise
             {
                 ActiveTrigger = new FaveroFA01Trigger();
             }
+            else
+            {
+                ActiveTrigger = null;
+            }
             if (ActiveTrigger != null) // Implies manual triggering
             {
                 await ActiveTrigger.Initialize(config);

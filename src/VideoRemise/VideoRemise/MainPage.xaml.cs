@@ -78,6 +78,7 @@ namespace VideoRemise
             if (!string.IsNullOrWhiteSpace(config.AdapterDeviceId))
             {
                 await Trigger.Start(config);
+                gridManager.AddTrigger(Trigger.ActiveTrigger);
             }
 
             await VideoChannel.Initialize();
@@ -377,24 +378,28 @@ namespace VideoRemise
                 "Set up match";
         }
 
-        internal void SetStatus()
+        internal async void SetStatus()
         {
-            var content = CommandBar.Content as TextBlock;
-            switch (CurrentMode)
+            void SetStatusInternal()
             {
-                case Mode.Idle:
-                    content.Text = "Idle";
-                    break;
-                case Mode.Replaying:
-                    content.Text = "Replaying";
-                    break;
-                case Mode.Recording:
-                    content.Text = "Recording";
-                    break;
-                case Mode.Focused:
-                    content.Text = "Focused - Replays are being recorded but will not be shown. Press tab to unfocus.";
-                    break;
+                var content = CommandBar.Content as TextBlock;
+                switch (CurrentMode)
+                {
+                    case Mode.Idle:
+                        content.Text = "Idle";
+                        break;
+                    case Mode.Replaying:
+                        content.Text = "Replaying";
+                        break;
+                    case Mode.Recording:
+                        content.Text = "Recording";
+                        break;
+                    case Mode.Focused:
+                        content.Text = "Focused - Replays are being recorded but will not be shown. Press tab to unfocus.";
+                        break;
+                }
             }
+            await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, SetStatusInternal);
         }
     }
 }
