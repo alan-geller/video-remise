@@ -4,15 +4,24 @@ stateDiagram-v2
     state "Ready" as B
     state "Recording" as C
     state "Paused" as D
-    state "Playing" as F
+    state "Replaying" as E
+    state "Focused" as F
+    state view_if <<choice>>
     [*] --> A
     A -->B:Set up Match
+    A -->B:Load Match
     B -->C:Start Match
+    B -->F:View Match
     C -->D:Pause Match
     C -->A:Finish Match
-    C -->F:(event)
+    C -->E:(event)
     D -->C:Continue Match
-    F -->D:Pause Match
-    F -->C:Stop Playback
-    F -->A:Finish Match
-```
+    E -->D:Pause Match
+    E -->C:Stop Playback??
+    E -->A:Finish Match
+    E -->F:(user action)
+    E -->E:(event)
+    F -->view_if:Stop Viewing
+    view_if -->C:if match is in progress
+    view_if -->B: if match is historical
+``` 
